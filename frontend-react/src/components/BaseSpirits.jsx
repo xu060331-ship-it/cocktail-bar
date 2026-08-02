@@ -10,11 +10,11 @@ const spirits = [
 ]
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 32 },
+  hidden: { opacity: 0, y: 40 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.8, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] },
   }),
 }
 
@@ -27,8 +27,8 @@ export default function BaseSpirits() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16"
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-20"
         >
           <h2 className="text-4xl text-[var(--color-accent)] tracking-[0.15em] font-serif text-left">
             六大基酒
@@ -49,8 +49,12 @@ export default function BaseSpirits() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.3 }}
               variants={itemVariants}
-              whileHover={{ borderColor: "var(--color-accent)" }}
-              className="flex flex-col items-center text-center py-8 px-4 rounded-2xl border border-transparent transition-all duration-300 hover:bg-[var(--color-accent-dim)]"
+              whileHover={{
+                borderColor: "var(--color-accent)",
+                boxShadow: "0 16px 48px rgba(201, 169, 110, 0.06)",
+              }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex flex-col items-center text-center py-10 px-4 rounded-2xl border border-transparent"
             >
               {/* 圆形图标 */}
               <div className="w-24 h-24 rounded-full bg-[var(--color-accent-dim)] border-2 border-[var(--color-border)] flex items-center justify-center text-4xl mb-5 transition-colors duration-300 group-hover:border-[var(--color-accent)]">

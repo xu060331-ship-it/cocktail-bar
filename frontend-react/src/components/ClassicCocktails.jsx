@@ -40,13 +40,13 @@ const cocktails = [
 ]
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 48 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.7,
-      delay: i * 0.1,
+      duration: 0.9,
+      delay: i * 0.15,
       ease: [0.16, 1, 0.3, 1],
     },
   }),
@@ -61,8 +61,8 @@ export default function ClassicCocktails() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-16"
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-20"
         >
           <h2 className="text-4xl text-[var(--color-accent)] tracking-[0.15em] font-serif text-left">
             IBA 官方经典鸡尾酒
@@ -82,9 +82,13 @@ export default function ClassicCocktails() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.3 }}
               variants={cardVariants}
-              whileHover={{ y: -8, borderColor: "var(--color-accent)" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="flex flex-col items-center text-center bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl px-5 pt-9 pb-7 cursor-pointer"
+              whileHover={{
+                y: -8,
+                borderColor: "var(--color-accent)",
+                boxShadow: "0 20px 60px rgba(201, 169, 110, 0.08)",
+              }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="flex flex-col items-center text-center bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl px-5 pt-10 pb-8 cursor-pointer"
             >
               {/* 圆形图片区 */}
               <div className="w-28 h-28 rounded-full bg-[var(--color-accent-dim)] border-2 border-[var(--color-border)] flex items-center justify-center text-5xl mb-5">

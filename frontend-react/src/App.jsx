@@ -2,6 +2,8 @@ import Navbar from "./components/Navbar"
 import HeroSection from "./components/HeroSection"
 import ClassicCocktails from "./components/ClassicCocktails"
 import BaseSpirits from "./components/BaseSpirits"
+import WhiskyQA from "./components/WhiskyQA"
+import Footer from "./components/Footer"
 
 export default function App() {
   return (
@@ -14,6 +16,8 @@ export default function App() {
         <HeroSection />
         <ClassicCocktails />
         <BaseSpirits />
+        <WhiskyQA />
+        <Footer />
       </div>
     </div>
   )
