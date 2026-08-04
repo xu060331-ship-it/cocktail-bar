@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-page: #1a1a2e;
-  --color-bg-card: #16213e;
-  --color-bg-nav: #0f1629;
+  --color-bg-page: #12100d;
+  --color-bg-card: #1c1813;
+  --color-bg-nav: #0a0806;
   --color-accent: #c9a96e;
-  --color-accent-dim: rgba(201, 169, 110, 0.15);
-  --color-border: #2a2a3e;
-  --color-text-muted: #6b6b6b;
-  --color-text-gray: #b0b0b0;
+  --color-accent-dim: rgba(201, 169, 110, 0.12);
+  --color-border: #2a2520;
+  --color-text-muted: #8a8078;
+  --color-text-gray: #c4b8a8;
 }
 
 /* 全局字体 */
@@ -19,13 +19,24 @@ body {
   margin: 0;
 }
 
-/* 微妙噪点纹理层 — 呼应 Hero 视频的烟雾质感 */
+/* 暖色噪点纹理层 — 呼应 Hero 视频的暗房烟雾颗粒感 */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* 全局暗暖色渐变 — 模拟视频中单一暖光源打在暗墙上的氛围 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.15;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201, 169, 110, 0.12) 0%, transparent 70%);
 }

@@ -1,6 +1,16 @@
+import { Link, useLocation } from "react-router-dom"
 import { GlassWater } from "lucide-react"
 
+const navLinks = [
+  { to: "/daily", label: "每日推荐" },
+  { to: "/cocktails", label: "酒谱" },
+  { to: "/spirits", label: "基酒" },
+  { to: "/articles", label: "关于酒" },
+]
+
 export default function Navbar({ transparent = false }) {
+  const location = useLocation()
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 px-8 transition-colors duration-500 ${
@@ -11,25 +21,29 @@ export default function Navbar({ transparent = false }) {
     >
       {/* 左侧：Logo + 导航链接 */}
       <nav className="flex items-center gap-7">
-        <a
-          href="/"
+        <Link
+          to="/"
           className="flex items-center gap-2 text-[var(--color-accent)] text-xl font-bold tracking-wide"
         >
           <GlassWater size={22} strokeWidth={1.5} />
           调酒百科
-        </a>
-        <a href="/daily" className="text-sm text-[var(--color-text-gray)] hover:text-white transition-colors">
-          每日推荐
-        </a>
-        <a href="#" className="text-sm text-[var(--color-text-gray)] hover:text-white transition-colors">
-          酒谱
-        </a>
-        <a href="#" className="text-sm text-[var(--color-text-gray)] hover:text-white transition-colors">
-          基酒
-        </a>
-        <a href="#" className="text-sm text-[var(--color-text-gray)] hover:text-white transition-colors">
-          关于酒
-        </a>
+        </Link>
+        {navLinks.map((link) => {
+          const isActive = location.pathname === link.to
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`text-sm transition-colors ${
+                isActive
+                  ? "text-[var(--color-accent)]"
+                  : "text-[var(--color-text-gray)] hover:text-white"
+              }`}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
       </nav>
 
       {/* 右侧：搜索 + 按钮 */}

@@ -17,8 +17,8 @@ export default function HeroSection() {
         </video>
       </div>
 
-      {/* 深色遮罩 */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0f1629]/60 via-[#0f1629]/40 to-[#0f1629]/85" />
+      {/* 深色遮罩 — 暖黑调，呼应视频灯光 */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#0a0806]/50 via-[#0a0806]/35 to-[#0a0806]/88" />
 
       {/* 文字层 */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center px-5">

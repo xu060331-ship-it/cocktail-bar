@@ -1,24 +1,39 @@
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom"
 import Navbar from "./components/Navbar"
-import HeroSection from "./components/HeroSection"
-import ClassicCocktails from "./components/ClassicCocktails"
-import BaseSpirits from "./components/BaseSpirits"
-import WhiskyQA from "./components/WhiskyQA"
-import Footer from "./components/Footer"
+import HomePage from "./pages/HomePage"
+import CocktailsPage from "./pages/CocktailsPage"
+import CocktailDetailPage from "./pages/CocktailDetailPage"
+import SpiritsPage from "./pages/SpiritsPage"
+import SpiritDetailPage from "./pages/SpiritDetailPage"
+import ArticlesPage from "./pages/ArticlesPage"
+import DailyPage from "./pages/DailyPage"
+
+function Layout() {
+  const location = useLocation()
+  const isHome = location.pathname === "/"
+
+  return (
+    <div className="bg-[var(--color-bg-page)] text-white font-serif min-h-screen">
+      <Navbar transparent={isHome} />
+      <Outlet />
+    </div>
+  )
+}
 
 export default function App() {
   return (
-    <div className="bg-[var(--color-bg-page)] text-white font-serif">
-      {/* 导航栏：首页透明，滚动后变深色 */}
-      <Navbar transparent />
-
-      {/* 滚动容器：全屏吸附 */}
-      <div className="h-[100dvh] overflow-y-scroll scroll-smooth snap-y snap-mandatory">
-        <HeroSection />
-        <ClassicCocktails />
-        <BaseSpirits />
-        <WhiskyQA />
-        <Footer />
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/cocktails" element={<CocktailsPage />} />
+          <Route path="/cocktails/:name" element={<CocktailDetailPage />} />
+          <Route path="/spirits" element={<SpiritsPage />} />
+          <Route path="/spirits/:name" element={<SpiritDetailPage />} />
+          <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/daily" element={<DailyPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
