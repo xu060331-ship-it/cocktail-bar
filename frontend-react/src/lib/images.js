@@ -13,3 +13,15 @@ export function spiritImg(slugName) {
 export function cocktailHeroImg(eng) {
   return `/images/${slug(eng)}.jpg`
 }
+
+const localArticles = [
+  { match: "味美思", file: "vermouth.png" },
+]
+
+export function articleImg(title) {
+  for (const a of localArticles) {
+    if (title.includes(a.match)) return `/images/${a.file}`
+  }
+  const s = slug(title).substring(0, 30)
+  return `https://picsum.photos/seed/${s}/600/400`
+}

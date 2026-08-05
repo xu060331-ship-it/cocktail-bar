@@ -1,11 +1,18 @@
+import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { GlassWater, ArrowUpRight } from "lucide-react"
+
+const footerLinks = [
+  { label: "酒谱", to: "/cocktails" },
+  { label: "基酒百科", to: "/spirits" },
+  { label: "关于酒", to: "/articles" },
+  { label: "关于我们", to: "/about" },
+]
 
 export default function Footer() {
   return (
     <footer className="w-full h-[100dvh] snap-start flex items-center bg-[var(--color-bg-nav)]">
       <div className="w-full max-w-7xl mx-auto px-5 h-full flex flex-col justify-between py-20">
-        {/* 上部：大标题 */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -13,10 +20,10 @@ export default function Footer() {
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="flex-1 flex flex-col justify-center"
         >
-          <a href="/" className="flex items-center gap-2 text-[var(--color-accent)] text-xl font-bold tracking-wide mb-8">
+          <Link to="/" className="flex items-center gap-2 text-[var(--color-accent)] text-xl font-bold tracking-wide mb-8">
             <GlassWater size={22} strokeWidth={1.5} />
             调酒百科
-          </a>
+          </Link>
 
           <h2 className="text-5xl lg:text-6xl text-white font-serif leading-tight mb-8 max-w-2xl">
             每一杯酒，
@@ -27,14 +34,14 @@ export default function Footer() {
           </h2>
 
           <div className="flex flex-wrap gap-6 text-sm">
-            {["酒谱", "基酒百科", "威士忌入门", "关于我们"].map((link) => (
-              <a
-                key={link}
-                href="#"
+            {footerLinks.map((link) => (
+              <Link
+                key={link.label}
+                to={link.to}
                 className="flex items-center gap-1 text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors duration-200"
               >
-                {link} <ArrowUpRight size={14} strokeWidth={1.5} />
-              </a>
+                {link.label} <ArrowUpRight size={14} strokeWidth={1.5} />
+              </Link>
             ))}
           </div>
         </motion.div>

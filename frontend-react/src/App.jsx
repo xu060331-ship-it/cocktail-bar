@@ -9,6 +9,7 @@ import SpiritDetailPage from "./pages/SpiritDetailPage"
 import ArticlesPage from "./pages/ArticlesPage"
 import DailyPage from "./pages/DailyPage"
 import SearchPage from "./pages/SearchPage"
+import AboutPage from "./pages/AboutPage"
 
 function Layout() {
   const location = useLocation()
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/articles/:id" element={<ArticleDetailPage />} />
           <Route path="/daily" element={<DailyPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

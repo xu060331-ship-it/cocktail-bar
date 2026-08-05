@@ -1,5 +1,6 @@
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
+import { cocktailImg } from "../lib/images"
 
 const feature = {
   name: "干马天尼",
@@ -54,8 +55,8 @@ export default function ClassicCocktails() {
           {/* 大卡 */}
           <div className="flex-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col">
             {/* 大图区 */}
-            <div className="h-[55%] bg-[var(--color-accent-dim)] flex items-center justify-center text-8xl border-b border-[var(--color-border)]">
-              {feature.emoji}
+            <div className="h-[55%] bg-[var(--color-accent-dim)] border-b border-[var(--color-border)] overflow-hidden">
+              <img src={cocktailImg(feature.eng)} alt={feature.name} className="w-full h-full object-cover" />
             </div>
             {/* 信息区 */}
             <div className="flex-1 p-8 flex flex-col justify-between">
@@ -100,8 +101,8 @@ export default function ClassicCocktails() {
                 className="flex-1 flex items-center gap-5 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl px-6 cursor-pointer transition-colors duration-500"
               >
                 {/* 小圆图 */}
-                <div className="w-16 h-16 rounded-full bg-[var(--color-accent-dim)] border border-[var(--color-border)] flex items-center justify-center text-2xl shrink-0">
-                  {c.emoji}
+                <div className="w-16 h-16 rounded-full bg-[var(--color-accent-dim)] border border-[var(--color-border)] overflow-hidden shrink-0">
+                  <img src={cocktailImg(c.eng)} alt={c.name} className="w-full h-full object-cover" />
                 </div>
                 {/* 信息 */}
                 <div className="flex-1 min-w-0">
