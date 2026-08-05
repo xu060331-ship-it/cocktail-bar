@@ -58,8 +58,7 @@ export default function SpiritDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI(`/api/spirits/${name}`)
       .then((d) => {
         setData(d)
         setLoading(false)

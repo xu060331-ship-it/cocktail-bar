@@ -45,8 +45,7 @@ export default function CocktailsPage() {
 
   // 页面加载时从后端拿数据
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI("/api/cocktails")
       .then((data) => {
         console.log("后端返回数据条数:", data.length)
         setAllCocktails(processData(data))

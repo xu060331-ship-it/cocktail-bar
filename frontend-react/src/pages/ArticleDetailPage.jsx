@@ -10,8 +10,7 @@ export default function ArticleDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI(`/api/articles/${id}`)
       .then((data) => {
         setArticle(data)
         setLoading(false)

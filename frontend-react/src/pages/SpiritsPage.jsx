@@ -57,8 +57,7 @@ export default function SpiritsPage() {
   const [showSeventh, setShowSeventh] = useState(false)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI("/api/spirits")
       .then((data) => {
         setSpirits(data)
         setLoading(false)

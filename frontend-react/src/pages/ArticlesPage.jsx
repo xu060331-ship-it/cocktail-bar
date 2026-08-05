@@ -14,8 +14,7 @@ export default function ArticlesPage() {
   const [hoveredArticle, setHoveredArticle] = useState(null)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI("/api/articles")
       .then((data) => {
         setArticles(data)
         setLoading(false)

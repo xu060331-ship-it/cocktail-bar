@@ -11,8 +11,7 @@ export default function CocktailDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI(`/api/cocktails/${name}`)
       .then((data) => {
         setCocktail(data)
         setLoading(false)

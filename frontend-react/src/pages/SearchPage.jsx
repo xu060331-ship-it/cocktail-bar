@@ -26,8 +26,7 @@ export default function SearchPage() {
     if (!q.trim()) return
     setLoading(true)
     setQuery(q)
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI(`/api/search?q=${encodeURIComponent(q)}`)
       .then((data) => {
         setResults(data.results)
         setParsed(data.parsed)

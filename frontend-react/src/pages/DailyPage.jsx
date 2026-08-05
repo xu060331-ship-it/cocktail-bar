@@ -11,8 +11,7 @@ export default function DailyPage() {
   const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
-    fetchAPI("")
-      .then((res) => res.json())
+    fetchAPI(`/api/daily?date=${today}`)
       .then((data) => {
         setPicks(data)
         setLoading(false)
