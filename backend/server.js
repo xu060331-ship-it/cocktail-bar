@@ -6,11 +6,7 @@ const app = express()
 app.use(cors())
 
 const db = new Client({
-  database: "cocktail_bar",
-  user: "postgres",
-  password: "tony0331",
-  host: "localhost",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar",
 })
 
 db.connect()
