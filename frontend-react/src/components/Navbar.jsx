@@ -6,6 +6,7 @@ const navLinks = [
   { to: "/cocktails", label: "酒谱" },
   { to: "/spirits", label: "基酒" },
   { to: "/articles", label: "关于酒" },
+  { to: "/search", label: "智能搜酒" },
 ]
 
 export default function Navbar({ transparent = false }) {
@@ -16,7 +17,7 @@ export default function Navbar({ transparent = false }) {
       className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 px-8 transition-colors duration-500 ${
         transparent
           ? "bg-transparent border-b border-white/10"
-          : "bg-[var(--color-bg-nav)] border-b border-[var(--color-border)]"
+          : "bg-[var(--color-bg-nav)] border-b border-[var(--color-border)]"//
       }`}
     >
       {/* 左侧：Logo + 导航链接 */}

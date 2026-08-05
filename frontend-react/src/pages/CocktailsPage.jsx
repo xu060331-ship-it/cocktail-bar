@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { cocktailImg } from "../lib/images"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, X } from "lucide-react"
-import cocktailsData from "../data/cocktails.json"
 
 const categories = ["全部", "难忘经典", "当代经典", "新时代"]
 const spiritFilters = ["全部", "金酒", "伏特加", "朗姆", "龙舌兰", "威士忌", "白兰地"]
@@ -25,18 +25,34 @@ function extractMethod(chn) {
   return m ? m[1] : ""
 }
 
-// 预处理数据
-const allCocktails = cocktailsData.map((c) => ({
-  ...c,
-  spirit: detectSpirit(c.ingredients),
-  method: extractMethod(c.chn),
-  chnClean: c.chn.replace(/[（(][^）)]*[）)]/g, "").trim(),
-}))
+// 预处理数据（基酒推断 + 调法提取）
+function processData(raw) {
+  return raw.map((c) => ({
+    ...c,
+    spirit: detectSpirit(c.ingredients),
+    method: extractMethod(c.chn),
+    chnClean: c.chn.replace(/[（(][^）)]*[）)]/g, "").trim(),
+  }))
+}
 
 export default function CocktailsPage() {
+  const [allCocktails, setAllCocktails] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeCat, setActiveCat] = useState("全部")
   const [activeSpirit, setActiveSpirit] = useState("全部")
   const [search, setSearch] = useState("")
+
+  // 页面加载时从后端拿数据
+  useEffect(() => {
+    fetch("http://localhost:3000/api/cocktails")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("后端返回数据条数:", data.length)
+        setAllCocktails(processData(data))
+        setLoading(false)
+      })
+      .catch((err) => console.error("获取失败:", err))
+  }, [])
 
   const filtered = useMemo(() => {
     return allCocktails.filter((c) => {
@@ -48,7 +64,15 @@ export default function CocktailsPage() {
       }
       return true
     })
-  }, [activeCat, activeSpirit, search])
+  }, [allCocktails, activeCat, activeSpirit, search])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+        <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
@@ -132,9 +156,13 @@ export default function CocktailsPage() {
                   to={`/cocktails/${encodeURIComponent(c.eng)}`}
                   className="block bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 cursor-pointer transition-all duration-500 hover:border-[var(--color-accent)] hover:shadow-[0_0_40px_rgba(201,169,110,0.08)]"
                 >
-                  {/* 图片占位 — 后续替换为真实图片 */}
-                  <div className="w-full h-44 bg-[var(--color-accent-dim)] rounded-xl mb-4 flex items-center justify-center text-5xl">
-                    🍸
+                  <div className="w-full h-44 bg-[var(--color-accent-dim)] rounded-xl mb-4 overflow-hidden">
+                    <img
+                      src={cocktailImg(c.eng)}
+                      alt={c.chnClean || c.eng}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
 
                   <div className="flex items-start justify-between mb-3">

@@ -3,10 +3,12 @@ import Navbar from "./components/Navbar"
 import HomePage from "./pages/HomePage"
 import CocktailsPage from "./pages/CocktailsPage"
 import CocktailDetailPage from "./pages/CocktailDetailPage"
+import ArticleDetailPage from "./pages/ArticleDetailPage"
 import SpiritsPage from "./pages/SpiritsPage"
 import SpiritDetailPage from "./pages/SpiritDetailPage"
 import ArticlesPage from "./pages/ArticlesPage"
 import DailyPage from "./pages/DailyPage"
+import SearchPage from "./pages/SearchPage"
 
 function Layout() {
   const location = useLocation()
@@ -31,7 +33,9 @@ export default function App() {
           <Route path="/spirits" element={<SpiritsPage />} />
           <Route path="/spirits/:name" element={<SpiritDetailPage />} />
           <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/articles/:id" element={<ArticleDetailPage />} />
           <Route path="/daily" element={<DailyPage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
