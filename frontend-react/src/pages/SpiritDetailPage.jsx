@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { fetchAPI } from "../lib/api";
 import { useParams, Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ExternalLink, ChevronDown } from "lucide-react"
@@ -57,7 +58,7 @@ export default function SpiritDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/spirits/${name}`)
+    fetchAPI("")
       .then((res) => res.json())
       .then((d) => {
         setData(d)

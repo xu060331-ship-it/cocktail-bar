@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { cocktailHeroImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 import { motion } from "framer-motion"
 import { ArrowLeft, Clock, GlassWater } from "lucide-react"
 
@@ -10,7 +11,7 @@ export default function CocktailDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/cocktails/${name}`)
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setCocktail(data)

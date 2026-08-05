@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { fetchAPI } from "../lib/api";
 import { useParams, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ArrowLeft, Clock, User } from "lucide-react"
@@ -9,7 +10,7 @@ export default function ArticleDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/articles/${id}`)
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setArticle(data)

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { useState, useMemo, useEffect } from "react"
 import { cocktailImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, X } from "lucide-react"
 
@@ -44,7 +45,7 @@ export default function CocktailsPage() {
 
   // 页面加载时从后端拿数据
   useEffect(() => {
-    fetch("http://localhost:3000/api/cocktails")
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         console.log("后端返回数据条数:", data.length)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { spiritImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight, ChevronDown, Sparkles } from "lucide-react"
 
@@ -56,7 +57,7 @@ export default function SpiritsPage() {
   const [showSeventh, setShowSeventh] = useState(false)
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/spirits")
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setSpirits(data)

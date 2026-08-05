@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { cocktailImg, spiritImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 import { motion } from "framer-motion"
 import { ArrowRight, Clock, User, Sparkles } from "lucide-react"
 
@@ -10,7 +11,7 @@ export default function DailyPage() {
   const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/daily?date=${today}`)
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setPicks(data)

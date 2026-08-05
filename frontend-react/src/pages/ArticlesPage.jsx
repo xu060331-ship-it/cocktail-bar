@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { articleImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 import { motion } from "framer-motion"
 import { ArrowRight, Clock, User } from "lucide-react"
 
@@ -13,7 +14,7 @@ export default function ArticlesPage() {
   const [hoveredArticle, setHoveredArticle] = useState(null)
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/articles")
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setArticles(data)

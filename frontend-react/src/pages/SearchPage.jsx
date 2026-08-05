@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, ArrowRight, Sparkles } from "lucide-react"
 import { cocktailImg } from "../lib/images"
+import { fetchAPI } from "../lib/api"
 
 const hints = [
   "我有金酒和柠檬，能调什么？",
@@ -25,7 +26,7 @@ export default function SearchPage() {
     if (!q.trim()) return
     setLoading(true)
     setQuery(q)
-    fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`)
+    fetchAPI("")
       .then((res) => res.json())
       .then((data) => {
         setResults(data.results)
