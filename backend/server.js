@@ -7,6 +7,8 @@ app.use(cors())
 
 const db = new Client({
   connectionString: process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar",
+  ssl: { rejectUnauthorized: false },
+  family: 4,
 })
 
 db.connect()
