@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, ArrowRight, Sparkles } from "lucide-react"
 import { cocktailImg } from "../lib/images"
@@ -14,10 +14,31 @@ const hints = [
 ]
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("")
+  const [searchParams] = useSearchParams()
+  const initialQ = searchParams.get("q") || ""
+  const [query, setQuery] = useState(initialQ)
   const [results, setResults] = useState(null)
   const [parsed, setParsed] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  const doSearch = (q) => {
+    if (!q.trim()) return
+    setLoading(true)
+    setQuery(q)
+    fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setResults(data.results)
+        setParsed(data.parsed)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }
+
+  // 如果导航栏带参数过来，自动搜索
+  useEffect(() => {
+    if (initialQ) doSearch(initialQ)
+  }, [initialQ])
 
   const handleChange = (e) => {
     const val = e.target.value
@@ -32,20 +53,6 @@ export default function SearchPage() {
     setQuery("")
     setResults(null)
     setParsed(null)
-  }
-
-  const doSearch = (q) => {
-    if (!q.trim()) return
-    setLoading(true)
-    setQuery(q)
-    fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(q)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setResults(data.results)
-        setParsed(data.parsed)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
   }
 
   const handleKeyDown = (e) => {

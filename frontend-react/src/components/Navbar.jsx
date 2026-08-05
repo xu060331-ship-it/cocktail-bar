@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom"
+import { useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { GlassWater } from "lucide-react"
 
 const navLinks = [
@@ -11,6 +12,14 @@ const navLinks = [
 
 export default function Navbar({ transparent = false }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [navSearch, setNavSearch] = useState("")
+
+  const handleNavSearch = (e) => {
+    if (e.key === "Enter" && navSearch.trim()) {
+      navigate(`/search?q=${encodeURIComponent(navSearch.trim())}`)
+    }
+  }
 
   return (
     <header
@@ -51,6 +60,9 @@ export default function Navbar({ transparent = false }) {
       <div className="flex items-center gap-4">
         <input
           type="text"
+          value={navSearch}
+          onChange={(e) => setNavSearch(e.target.value)}
+          onKeyDown={handleNavSearch}
           placeholder="搜索酒名、基酒、口味"
           className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none w-56"
         />
