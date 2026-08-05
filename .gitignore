@@ -4,3 +4,5 @@ dist/
 *.log
 .DS_Store
 frontend-react/public/images/
+front-end/
+frontend-react/src/assets/
