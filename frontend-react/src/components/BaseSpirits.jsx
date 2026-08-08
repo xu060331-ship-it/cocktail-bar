@@ -85,8 +85,8 @@ export default function BaseSpirits() {
   const [hovered, setHovered] = useState(null)
 
   return (
-    <section className="w-full h-[100dvh] snap-start flex items-center bg-[var(--color-bg-page)]">
-      <div className="w-full max-w-7xl mx-auto px-5 flex flex-col justify-center h-full py-16">
+    <section className="w-full min-h-[100dvh] snap-start flex items-center bg-[var(--color-bg-page)]">
+      <div className="w-full max-w-7xl mx-auto px-5 flex flex-col justify-center h-full py-10 md:py-16">
 
         {/* 标题区 */}
         <motion.div
@@ -94,21 +94,21 @@ export default function BaseSpirits() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-14"
+          className="mb-8 md:mb-14"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 font-serif">
             THE FOUNDATION
           </p>
-          <h2 className="text-4xl text-white tracking-[0.08em] font-serif leading-tight">
+          <h2 className="text-3xl md:text-4xl text-white tracking-[0.08em] font-serif leading-tight">
             六大基酒
           </h2>
-          <p className="text-base text-[var(--color-text-muted)] italic tracking-wide mt-2">
+          <p className="text-sm md:text-base text-[var(--color-text-muted)] italic tracking-wide mt-2">
             悬浮一张卡片，聚光灯会暗淡其余
           </p>
         </motion.div>
 
         {/* 3×2 聚焦网格 */}
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {spirits.map((s, i) => (
             <SpiritCard
               key={s.eng}

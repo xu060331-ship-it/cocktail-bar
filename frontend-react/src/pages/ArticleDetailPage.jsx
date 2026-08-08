@@ -3,6 +3,7 @@ import { fetchAPI } from "../lib/api";
 import { useParams, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ArrowLeft, Clock, User } from "lucide-react"
+import Breadcrumb from "../components/Breadcrumb"
 
 export default function ArticleDetailPage() {
   const { id } = useParams()
@@ -10,7 +11,7 @@ export default function ArticleDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAPI(`/api/articles/${id}`)
+    fetchAPI(`/api/articles/${id}`)
       .then((data) => {
         setArticle(data)
         setLoading(false)
@@ -50,6 +51,10 @@ export default function ArticleDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
+          <Breadcrumb items={[
+            { label: "关于酒", to: "/articles" },
+            { label: article.cat || "文章" }
+          ]} />
           <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full mb-4 inline-block">
             {article.cat}
           </span>

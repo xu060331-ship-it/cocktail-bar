@@ -11,8 +11,8 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="w-full h-[100dvh] snap-start flex items-center bg-[var(--color-bg-nav)]">
-      <div className="w-full max-w-7xl mx-auto px-5 h-full flex flex-col justify-between py-20">
+    <footer className="w-full min-h-[60dvh] md:h-[100dvh] snap-start flex items-center bg-[var(--color-bg-nav)]">
+      <div className="w-full max-w-7xl mx-auto px-5 h-full flex flex-col justify-between py-12 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -25,7 +25,7 @@ export default function Footer() {
             调酒百科
           </Link>
 
-          <h2 className="text-5xl lg:text-6xl text-white font-serif leading-tight mb-8 max-w-2xl">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl text-white font-serif leading-tight mb-8 max-w-2xl">
             每一杯酒，
             <br />
             都有一段横跨百年

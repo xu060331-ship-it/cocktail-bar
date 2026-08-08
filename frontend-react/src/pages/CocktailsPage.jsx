@@ -7,6 +7,9 @@ import { Search, X } from "lucide-react"
 
 const categories = ["全部", "难忘经典", "当代经典", "新时代"]
 const spiritFilters = ["全部", "金酒", "伏特加", "朗姆", "龙舌兰", "威士忌", "白兰地"]
+const tasteFilters = ["全部", "酸甜", "果香", "清爽", "烈", "苦味", "草本", "奶油", "甜味", "辛辣"]
+const difficultyLabels = ["全部", "新手", "入门", "进阶", "专业"]
+const occasionFilters = ["全部", "餐前", "餐后", "派对", "夏日", "冬季", "酒吧特调"]
 
 // 从配料文本里推断基酒
 function detectSpirit(ingredients) {
@@ -39,37 +42,64 @@ function processData(raw) {
 export default function CocktailsPage() {
   const [allCocktails, setAllCocktails] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeCat, setActiveCat] = useState("全部")
   const [activeSpirit, setActiveSpirit] = useState("全部")
+  const [activeTaste, setActiveTaste] = useState("全部")
+  const [activeDifficulty, setActiveDifficulty] = useState("全部")
+  const [activeOccasion, setActiveOccasion] = useState("全部")
   const [search, setSearch] = useState("")
 
   // 页面加载时从后端拿数据
   useEffect(() => {
     fetchAPI("/api/cocktails")
       .then((data) => {
-        console.log("后端返回数据条数:", data.length)
         setAllCocktails(processData(data))
         setLoading(false)
       })
-      .catch((err) => console.error("获取失败:", err))
+      .catch((err) => {
+        console.error("获取失败:", err)
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
   const filtered = useMemo(() => {
     return allCocktails.filter((c) => {
       if (activeCat !== "全部" && c.cat !== activeCat) return false
       if (activeSpirit !== "全部" && c.spirit !== activeSpirit) return false
+      if (activeTaste !== "全部" && (!c.taste_tags || !c.taste_tags.includes(activeTaste))) return false
+      if (activeDifficulty !== "全部") {
+        const diffMap = { "新手": 1, "入门": 2, "进阶": 3, "专业": 4 }
+        if (c.difficulty !== diffMap[activeDifficulty]) return false
+      }
+      if (activeOccasion !== "全部" && (!c.occasion || !c.occasion.includes(activeOccasion))) return false
       if (search) {
         const s = search.toLowerCase()
         if (!c.chnClean.includes(search) && !c.eng.toLowerCase().includes(s)) return false
       }
       return true
     })
-  }, [allCocktails, activeCat, activeSpirit, search])
+  }, [allCocktails, activeCat, activeSpirit, activeTaste, activeDifficulty, activeOccasion, search])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl mb-3">数据加载失败</p>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
+          <button onClick={() => { setError(null); setLoading(true); fetchAPI("/api/cocktails").then((data) => { setAllCocktails(processData(data)); setLoading(false); }).catch((err) => { setError(err.message); setLoading(false); }); }} className="text-sm text-[var(--color-accent)] border border-[var(--color-accent)] rounded-full px-6 py-2 hover:bg-[var(--color-accent)] hover:text-[var(--color-bg-page)] transition-colors">
+            重新加载
+          </button>
+        </div>
       </div>
     )
   }
@@ -138,6 +168,40 @@ export default function CocktailsPage() {
           </div>
         </div>
 
+        {/* 口感 + 难度 + 场景 */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <span className="text-xs text-[var(--color-text-muted)] shrink-0">口感</span>
+          <div className="flex gap-1 flex-wrap">
+            {tasteFilters.map((t) => (
+              <button key={t} onClick={() => setActiveTaste(t)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeTaste === t ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <span className="text-xs text-[var(--color-text-muted)] shrink-0">难度</span>
+          <div className="flex gap-1">
+            {difficultyLabels.map((d) => (
+              <button key={d} onClick={() => setActiveDifficulty(d)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeDifficulty === d ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <span className="text-xs text-[var(--color-text-muted)] shrink-0">场景</span>
+          <div className="flex gap-1 flex-wrap">
+            {occasionFilters.map((o) => (
+              <button key={o} onClick={() => setActiveOccasion(o)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeOccasion === o ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <p className="text-xs text-[var(--color-text-muted)] mb-6">共 {filtered.length} 款</p>
 
         {/* 卡片网格 */}
@@ -180,6 +244,14 @@ export default function CocktailsPage() {
                     {c.method && (
                       <span className="text-[10px] bg-[var(--color-border)] text-[var(--color-text-gray)] px-2.5 py-0.5 rounded-full">{c.method}</span>
                     )}
+                    {c.difficulty && (
+                      <span className="text-[10px] bg-[var(--color-bg-page)] text-[var(--color-text-muted)] px-2.5 py-0.5 rounded-full border border-[var(--color-border)]">
+                        {["", "新手", "入门", "进阶", "专业"][c.difficulty]}
+                      </span>
+                    )}
+                    {c.taste_tags && c.taste_tags.slice(0, 2).map((tag) => (
+                      <span key={tag} className="text-[10px] text-[var(--color-text-gray)] px-2 py-0.5 rounded-full bg-[var(--color-accent-dim)]">{tag}</span>
+                    ))}
                   </div>
                 </Link>
               </motion.div>
@@ -190,7 +262,7 @@ export default function CocktailsPage() {
         {filtered.length === 0 && (
           <div className="text-center py-20">
             <p className="text-[var(--color-text-muted)] text-lg">没有找到匹配的鸡尾酒</p>
-            <button onClick={() => { setActiveCat("全部"); setActiveSpirit("全部"); setSearch("") }} className="mt-4 text-sm text-[var(--color-accent)] hover:underline">
+            <button onClick={() => { setActiveCat("全部"); setActiveSpirit("全部"); setActiveTaste("全部"); setActiveDifficulty("全部"); setActiveOccasion("全部"); setSearch("") }} className="mt-4 text-sm text-[var(--color-accent)] hover:underline">
               清除所有筛选
             </button>
           </div>

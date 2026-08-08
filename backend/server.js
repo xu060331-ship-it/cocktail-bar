@@ -1,14 +1,19 @@
+require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
 const { Client } = require("pg")
+const { mountAuthRoutes, authMiddleware } = require("./auth")
 const app = express()
 
 app.use(cors())
+app.use(express.json())
+
+const connStr = process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar"
+const isLocal = connStr.includes("localhost") || connStr.includes("127.0.0.1")
 
 const db = new Client({
-  connectionString: process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar",
-  ssl: { rejectUnauthorized: false },
-  family: 4,
+  connectionString: connStr,
+  ssl: isLocal ? false : { rejectUnauthorized: false },
 })
 
 db.connect()
@@ -19,20 +24,38 @@ db.connect()
 
 app.get("/api/cocktails", async (req, res) => {
   try {
-    const { spirit, search } = req.query
+    const { spirit, search, taste, difficulty, occasion } = req.query
     let query = "SELECT * FROM cocktails"
     const params = []
+    const conditions = []
 
     if (search) {
       params.push(`%${search}%`)
-      query += ` WHERE (eng ILIKE $${params.length} OR chn ILIKE $${params.length})`
+      conditions.push(`(eng ILIKE $${params.length} OR chn ILIKE $${params.length})`)
     }
 
     if (spirit) {
       params.push(`%${spirit}%`)
-      query += `${params.length === 1 ? " WHERE" : " AND"} EXISTS (
-        SELECT 1 FROM unnest(ingredients) AS ing WHERE ing ILIKE $${params.length}
-      )`
+      conditions.push(`EXISTS (SELECT 1 FROM unnest(ingredients) AS ing WHERE ing ILIKE $${params.length})`)
+    }
+
+    if (taste) {
+      params.push(taste)
+      conditions.push(`$${params.length} = ANY(taste_tags)`)
+    }
+
+    if (difficulty) {
+      params.push(parseInt(difficulty))
+      conditions.push(`difficulty = $${params.length}`)
+    }
+
+    if (occasion) {
+      params.push(occasion)
+      conditions.push(`$${params.length} = ANY(occasion)`)
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ")
     }
 
     query += " ORDER BY id"
@@ -43,11 +66,39 @@ app.get("/api/cocktails", async (req, res) => {
   }
 })
 
+// 热门排行
+app.get("/api/cocktails/popular", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10
+    const result = await db.query("SELECT id, eng, chn, cat, taste_tags, difficulty, view_count FROM cocktails ORDER BY view_count DESC LIMIT $1", [limit])
+    res.json(result.rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.get("/api/cocktails/:name", async (req, res) => {
   try {
-    const result = await db.query("SELECT id, eng, chn, cat, ingredients, story FROM cocktails WHERE eng = $1", [req.params.name])
+    const result = await db.query(
+      "SELECT id, eng, chn, cat, ingredients, story, method, taste_tags, difficulty, occasion, view_count, tip FROM cocktails WHERE eng = $1",
+      [req.params.name]
+    )
     if (result.rows.length === 0) return res.status(404).json({ error: "未找到" })
     res.json(result.rows[0])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 浏览计数 +1
+app.post("/api/cocktails/:name/view", async (req, res) => {
+  try {
+    const result = await db.query(
+      "UPDATE cocktails SET view_count = view_count + 1 WHERE eng = $1 RETURNING view_count",
+      [req.params.name]
+    )
+    if (result.rows.length === 0) return res.status(404).json({ error: "未找到" })
+    res.json({ view_count: result.rows[0].view_count })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -108,14 +159,10 @@ app.get("/api/articles/:id", async (req, res) => {
 app.get("/api/daily", async (req, res) => {
   try {
     const seed = req.query.date || new Date().toISOString().slice(0, 10)
-    // PostgreSQL 用 MD5(seed) 做确定性随机——同一天返回相同结果
-    const orderC = `MD5(eng || '${seed}')`
-    const orderS = `MD5(slug || '${seed}')`
-    const orderA = `MD5(title || '${seed}')`
-
-    const cocktails = await db.query(`SELECT * FROM cocktails ORDER BY ${orderC} LIMIT 1`)
-    const spirits = await db.query(`SELECT id, slug, name, eng, emoji, description AS desc FROM spirits ORDER BY ${orderS} LIMIT 1`)
-    const articles = await db.query(`SELECT * FROM articles ORDER BY ${orderA} LIMIT 2`)
+    // PostgreSQL 用 MD5(seed) 做确定性随机——同一天返回相同结果（参数化防注入）
+    const cocktails = await db.query(`SELECT * FROM cocktails ORDER BY MD5(eng || $1) LIMIT 1`, [seed])
+    const spirits = await db.query(`SELECT id, slug, name, eng, emoji, description AS desc FROM spirits ORDER BY MD5(slug || $1) LIMIT 1`, [seed])
+    const articles = await db.query(`SELECT * FROM articles ORDER BY MD5(title || $1) LIMIT 2`, [seed])
 
     res.json({
       cocktail: cocktails.rows[0],
@@ -232,6 +279,96 @@ app.get("/api/search", async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+// ====== 收藏 API ======
+
+// 收藏酒款
+app.post("/api/favorites/:eng", authMiddleware, async (req, res) => {
+  try {
+    await db.query(
+      "INSERT INTO favorites (user_id, cocktail_eng) VALUES ($1, $2) ON CONFLICT (user_id, cocktail_eng) DO NOTHING",
+      [req.user.id, req.params.eng]
+    )
+    res.json({ favorited: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 取消收藏
+app.delete("/api/favorites/:eng", authMiddleware, async (req, res) => {
+  try {
+    await db.query("DELETE FROM favorites WHERE user_id = $1 AND cocktail_eng = $2", [req.user.id, req.params.eng])
+    res.json({ favorited: false })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 获取用户收藏列表
+app.get("/api/favorites", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT c.*, f.created_at AS fav_at FROM favorites f
+       JOIN cocktails c ON f.cocktail_eng = c.eng
+       WHERE f.user_id = $1
+       ORDER BY f.created_at DESC`,
+      [req.user.id]
+    )
+    res.json(result.rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 检查某款酒是否已收藏
+app.get("/api/favorites/:eng", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT 1 FROM favorites WHERE user_id = $1 AND cocktail_eng = $2",
+      [req.user.id, req.params.eng]
+    )
+    res.json({ favorited: result.rows.length > 0 })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ====== 浏览历史 API ======
+
+// 记录浏览（登录用户）
+app.post("/api/history/:eng", authMiddleware, async (req, res) => {
+  try {
+    await db.query(
+      `INSERT INTO view_history (user_id, cocktail_eng, viewed_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (user_id, cocktail_eng) DO UPDATE SET viewed_at = NOW()`,
+      [req.user.id, req.params.eng]
+    )
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// 获取浏览历史
+app.get("/api/history", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT c.*, vh.viewed_at FROM view_history vh
+       JOIN cocktails c ON vh.cocktail_eng = c.eng
+       WHERE vh.user_id = $1
+       ORDER BY vh.viewed_at DESC
+       LIMIT 20`,
+      [req.user.id]
+    )
+    res.json(result.rows)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+mountAuthRoutes(app, db)
 
 app.listen(3000, () => {
   console.log("后端运行在 http://localhost:3000")

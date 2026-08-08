@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 
@@ -35,7 +36,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-5xl md:text-7xl text-white font-bold leading-[1.1] mb-5 font-serif"
+          className="text-3xl sm:text-5xl md:text-7xl text-white font-bold leading-[1.1] mb-5 font-serif"
         >
           欢迎来到
           <br />
@@ -51,17 +52,18 @@ export default function HeroSection() {
           每一杯酒，都有一段横跨百年的故事
         </motion.p>
 
-        <motion.a
-          href="/daily"
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
-          className="inline-block bg-[var(--color-accent)] text-[var(--color-bg-page)] px-10 py-3.5 rounded-full text-base font-bold tracking-wide hover:brightness-110 transition-all"
         >
-          开始探索
-        </motion.a>
+          <Link
+            to="/daily"
+            className="inline-block bg-[var(--color-accent)] text-[var(--color-bg-page)] px-10 py-3.5 rounded-full text-base font-bold tracking-wide hover:brightness-110 hover:scale-[1.04] active:scale-[0.97] transition-all duration-200"
+          >
+            开始探索
+          </Link>
+        </motion.div>
       </div>
 
       {/* 向下滚动指示器 */}

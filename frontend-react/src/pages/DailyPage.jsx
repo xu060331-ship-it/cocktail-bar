@@ -8,22 +8,45 @@ import { ArrowRight, Clock, User, Sparkles } from "lucide-react"
 export default function DailyPage() {
   const [picks, setPicks] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
-    fetchAPI(`/api/daily?date=${today}`)
+    fetchAPI(`/api/daily?date=${today}`)
       .then((data) => {
         setPicks(data)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => { setError(err.message); setLoading(false) })
   }, [today])
 
 
-  if (loading || !picks) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl mb-3">每日推荐加载失败</p>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
+          <button onClick={() => window.location.reload()} className="text-sm text-[var(--color-accent)] border border-[var(--color-accent)] rounded-full px-6 py-2 hover:bg-[var(--color-accent)] hover:text-[var(--color-bg-page)] transition-colors">
+            重新加载
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!picks) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+        <p className="text-2xl text-[var(--color-text-muted)]">暂无推荐数据</p>
       </div>
     )
   }

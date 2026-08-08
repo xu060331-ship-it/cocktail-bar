@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { cocktailImg } from "../lib/images"
@@ -33,16 +34,16 @@ const threeCards = [
 
 export default function ClassicCocktails() {
   return (
-    <section className="w-full h-[100dvh] snap-start flex  bg-[var(--color-bg-page)]">
-      <div className="w-full max-w-7xl mx-auto px-5 flex gap-10 h-full pt-24 pb-16">
+    <section className="w-full min-h-[100dvh] snap-start flex bg-[var(--color-bg-page)]">
+      <div className="w-full max-w-7xl mx-auto px-5 flex flex-col lg:flex-row gap-6 md:gap-10 h-full pt-16 md:pt-24 pb-10 md:pb-16">
 
-        {/* ===== 左侧：一张大卡（占 40%） ===== */}
+        {/* ===== 左侧：一张大卡（桌面端占 40%，手机端全宽） ===== */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="w-[42%] shrink-0 flex flex-col"
+          className="w-full lg:w-[42%] shrink-0 flex flex-col min-h-[320px]"
         >
           {/* 区块标题 */}
           <div className="mb-8">
@@ -83,9 +84,9 @@ export default function ClassicCocktails() {
             <p className="text-sm text-[var(--color-text-muted)] italic tracking-wide">
               每一杯都是调酒史上的里程碑
             </p>
-            <a href="#" className="flex items-center gap-1 text-xs text-[var(--color-accent)] hover:underline">
+            <Link to="/cocktails" className="flex items-center gap-1 text-xs text-[var(--color-accent)] hover:underline">
               查看全部 <ArrowRight size={14} strokeWidth={1.5} />
-            </a>
+            </Link>
           </div>
 
           {/* 3 张卡竖排 */}

@@ -1,6 +1,17 @@
 const { Client } = require("pg")
 const fs = require("fs")
 const cocktailsData = JSON.parse(fs.readFileSync("./data/cocktails.json", "utf-8"))
+const methodsData = JSON.parse(fs.readFileSync("./data/cocktail-methods.json", "utf-8"))
+const methodsMap = {}
+methodsData.forEach(m => { methodsMap[m.eng] = { method: m.method, glass: m.glass, steps: m.steps, garnish: m.garnish } })
+
+const attrsData = JSON.parse(fs.readFileSync("./data/cocktail-attributes.json", "utf-8"))
+const attrsMap = {}
+attrsData.forEach(a => { attrsMap[a.eng] = { taste_tags: a.taste_tags, difficulty: a.difficulty, occasion: a.occasion } })
+
+const tipsData = JSON.parse(fs.readFileSync("./data/cocktail-tips.json", "utf-8"))
+const tipsMap = {}
+tipsData.forEach(t => { tipsMap[t.eng] = t.tip })
 
 const client = new Client({
   database: "cocktail_bar",
@@ -351,6 +362,12 @@ async function setup() {
       cat VARCHAR(50),
       ingredients TEXT[],
       story JSONB,
+      method JSONB,
+      taste_tags TEXT[],
+      difficulty INT DEFAULT 2,
+      occasion TEXT[],
+      view_count INT DEFAULT 0,
+      tip TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     )
   `)
@@ -392,8 +409,8 @@ async function setup() {
   for (const c of cocktailsData) {
     const story = generateStory(c)
     await client.query(
-      "INSERT INTO cocktails (eng, chn, cat, ingredients, story) VALUES ($1, $2, $3, $4, $5)",
-      [c.eng, c.chn, c.cat, c.ingredients, JSON.stringify(story)]
+      "INSERT INTO cocktails (eng, chn, cat, ingredients, story, method, taste_tags, difficulty, occasion, tip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+      [c.eng, c.chn, c.cat, c.ingredients, JSON.stringify(story), methodsMap[c.eng] ? JSON.stringify(methodsMap[c.eng]) : null, attrsMap[c.eng]?.taste_tags || null, attrsMap[c.eng]?.difficulty || 2, attrsMap[c.eng]?.occasion || null, tipsMap[c.eng] || null]
     )
   }
   console.log(`导入 ${cocktailsData.length} 款鸡尾酒（含历史故事）`)

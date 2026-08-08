@@ -2,22 +2,88 @@ import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { cocktailHeroImg } from "../lib/images"
 import { fetchAPI } from "../lib/api"
+import { useAuth } from "../lib/auth"
+import Breadcrumb from "../components/Breadcrumb"
 import { motion } from "framer-motion"
-import { ArrowLeft, Clock, GlassWater } from "lucide-react"
+import { ArrowLeft, Clock, GlassWater, Heart, Copy, Check, Share2 } from "lucide-react"
 
 export default function CocktailDetailPage() {
   const { name } = useParams()
+  const { user } = useAuth()
   const [cocktail, setCocktail] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [favorited, setFavorited] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [related, setRelated] = useState([])
 
   useEffect(() => {
-    fetchAPI(`/api/cocktails/${name}`)
+    fetchAPI(`/api/cocktails/${name}`)
       .then((data) => {
         setCocktail(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))
+    // 浏览计数 +1（fire and forget）
+    fetchAPI(`/api/cocktails/${encodeURIComponent(name)}/view`, { method: "POST" }).catch(() => {})
+    // 记录浏览历史（登录用户）
+    if (user) {
+      const token = localStorage.getItem("token")
+      fetchAPI(`/api/history/${encodeURIComponent(name)}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {})
+    }
   }, [name])
+
+  // 获取相关推荐
+  useEffect(() => {
+    if (!cocktail?.taste_tags?.length) return
+    const tag = cocktail.taste_tags[0]
+    fetchAPI(`/api/cocktails?taste=${encodeURIComponent(tag)}`)
+      .then((data) => {
+        setRelated(data.filter((c) => c.eng !== cocktail.eng).slice(0, 4))
+      })
+      .catch(() => {})
+  }, [cocktail])
+
+  // 检查收藏状态
+  useEffect(() => {
+    if (!user) { setFavorited(false); return }
+    const token = localStorage.getItem("token")
+    fetchAPI(`/api/favorites/${encodeURIComponent(name)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((data) => setFavorited(data.favorited))
+      .catch(() => {})
+  }, [name, user])
+
+  // 切换收藏
+  async function toggleFavorite() {
+    if (!user) return
+    setFavLoading(true)
+    const token = localStorage.getItem("token")
+    try {
+      if (favorited) {
+        await fetchAPI(`/api/favorites/${encodeURIComponent(name)}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        setFavorited(false)
+      } else {
+        await fetchAPI(`/api/favorites/${encodeURIComponent(name)}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        setFavorited(true)
+      }
+    } catch (err) {
+      console.error("收藏操作失败:", err)
+    } finally {
+      setFavLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -62,6 +128,13 @@ export default function CocktailDetailPage() {
 
       {/* 内容区 */}
       <div className="max-w-3xl mx-auto px-5 py-16">
+        {/* 面包屑 */}
+        <Breadcrumb items={[
+          { label: "酒谱", to: "/cocktails" },
+          { label: cocktail?.cat || "..." },
+          { label: cocktail?.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || "..." }
+        ]} />
+
         {/* 标题 */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -73,9 +146,52 @@ export default function CocktailDetailPage() {
           <h1 className="text-5xl md:text-6xl text-white font-serif leading-tight mb-4">{cocktail.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || cocktail.eng}</h1>
           <p className="text-lg text-[var(--color-text-muted)] italic">{cocktail.eng}</p>
 
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-6 items-center">
             <span className="text-xs bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-3 py-1 rounded-full">{cocktail.cat}</span>
+            {user && (
+              <button
+                onClick={toggleFavorite}
+                disabled={favLoading}
+                className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+                  favorited
+                    ? "bg-red-500/10 border-red-500/30 text-red-400"
+                    : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-red-400 hover:border-red-500/30"
+                }`}
+              >
+                <Heart size={12} strokeWidth={1.5} fill={favorited ? "currentColor" : "none"} />
+                {favorited ? "已收藏" : "收藏"}
+              </button>
+            )}
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(window.location.href)
+                setLinkCopied(true)
+                setTimeout(() => setLinkCopied(false), 2000)
+              }}
+              className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors border border-[var(--color-border)] rounded-full px-2.5 py-1"
+            >
+              {linkCopied ? <Check size={12} strokeWidth={1.5} className="text-green-400" /> : <Share2 size={12} strokeWidth={1.5} />}
+              {linkCopied ? "已复制链接" : "分享"}
+            </button>
+            {cocktail.difficulty && (
+              <span className="text-xs bg-[var(--color-bg-page)] text-[var(--color-text-gray)] px-3 py-1 rounded-full border border-[var(--color-border)]">
+                {["", "新手", "入门", "进阶", "专业"][cocktail.difficulty]}
+              </span>
+            )}
+            {cocktail.view_count > 0 && (
+              <span className="text-xs text-[var(--color-text-muted)] px-2 py-1">{cocktail.view_count} 次浏览</span>
+            )}
           </div>
+          {(cocktail.taste_tags?.length > 0 || cocktail.occasion?.length > 0) && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {cocktail.taste_tags?.map((tag) => (
+                <span key={tag} className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full">{tag}</span>
+              ))}
+              {cocktail.occasion?.map((o) => (
+                <span key={o} className="text-[10px] bg-[var(--color-bg-card)] text-[var(--color-text-muted)] px-2.5 py-0.5 rounded-full border border-[var(--color-border)]">适合{o}</span>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* 历史故事 — 从数据库读取 */}
@@ -119,7 +235,21 @@ export default function CocktailDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* 配料 */}
             <div>
-              <h3 className="text-sm text-[var(--color-accent)] tracking-wide mb-4">配料</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <h3 className="text-sm text-[var(--color-accent)] tracking-wide">配料</h3>
+                <button
+                  onClick={async () => {
+                    const text = cocktail.ingredients.join("\n")
+                    await navigator.clipboard.writeText(text)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                  className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors border border-[var(--color-border)] rounded-full px-2.5 py-1"
+                >
+                  {copied ? <Check size={12} strokeWidth={1.5} className="text-green-400" /> : <Copy size={12} strokeWidth={1.5} />}
+                  {copied ? "已复制" : "一键复制"}
+                </button>
+              </div>
               <ul className="space-y-3">
                 {cocktail.ingredients.map((ing, i) => (
                   <li key={i} className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
@@ -136,30 +266,87 @@ export default function CocktailDetailPage() {
                 <Clock size={14} strokeWidth={1.5} className="inline mr-1" />
                 调制步骤
               </h3>
-              <ol className="space-y-3">
-                <li className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
-                  <span className="text-xs text-[var(--color-accent)] font-bold mt-0.5 shrink-0">01</span>
-                  将所有配料加入摇酒壶，加冰用力摇和 10-12 秒
-                </li>
-                <li className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
-                  <span className="text-xs text-[var(--color-accent)] font-bold mt-0.5 shrink-0">02</span>
-                  双重过滤倒入装满碎冰的飓风杯中
-                </li>
-                <li className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
-                  <span className="text-xs text-[var(--color-accent)] font-bold mt-0.5 shrink-0">03</span>
-                  苏打水补满，轻轻提拉混合
-                </li>
-                <li className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
-                  <span className="text-xs text-[var(--color-accent)] font-bold mt-0.5 shrink-0">04</span>
-                  用菠萝角、樱桃和薄荷枝装饰杯口
-                </li>
-              </ol>
+              {cocktail.method ? (
+                <div className="space-y-4">
+                  {/* 方法 + 杯具 */}
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    <span className="bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-3 py-1 rounded-full">
+                      {cocktail.method.method}
+                    </span>
+                    <span className="bg-[var(--color-bg-page)] text-[var(--color-text-gray)] px-3 py-1 rounded-full border border-[var(--color-border)]">
+                      {cocktail.method.glass}
+                    </span>
+                  </div>
+                  {/* 步骤 */}
+                  <ol className="space-y-3">
+                    {cocktail.method.steps.map((step, si) => (
+                      <li key={si} className="flex items-start gap-3 text-sm text-[var(--color-text-gray)]">
+                        <span className="text-xs text-[var(--color-accent)] font-bold mt-0.5 shrink-0">
+                          {String(si + 1).padStart(2, "0")}
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                  {/* 装饰 */}
+                  {cocktail.method.garnish && cocktail.method.garnish !== "无需装饰" && (
+                    <p className="text-xs text-[var(--color-text-muted)] italic border-t border-[var(--color-border)] pt-3">
+                      🍸 {cocktail.method.garnish}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <ol className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm text-[var(--color-text-muted)] py-8">
+                    调制方法数据正在更新中...
+                  </li>
+                </ol>
+              )}
             </div>
           </div>
+
+          {/* 调酒提醒 */}
+          {cocktail.tip && (
+            <div className="mt-8 border-t border-[var(--color-border)] pt-6">
+              <div className="flex items-start gap-3 bg-[var(--color-accent-dim)] rounded-xl p-5">
+                <span className="text-lg shrink-0 mt-0.5">💡</span>
+                <div>
+                  <p className="text-xs text-[var(--color-accent)] tracking-wide mb-1">关键提醒</p>
+                  <p className="text-sm text-[var(--color-text-gray)] leading-relaxed">{cocktail.tip}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.section>
 
+        {/* 相关推荐 */}
+        {related.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-[var(--color-border)]">
+            <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-6">RELATED COCKTAILS</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {related.map((c) => (
+                <Link
+                  key={c.eng}
+                  to={`/cocktails/${encodeURIComponent(c.eng)}`}
+                  className="group bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl overflow-hidden hover:border-[var(--color-accent)] transition-all"
+                >
+                  <div className="aspect-square bg-[var(--color-accent-dim)] overflow-hidden">
+                    <img src={cocktailHeroImg(c.eng)} alt={c.eng} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  </div>
+                  <div className="p-3">
+                    <h4 className="text-sm text-white font-serif group-hover:text-[var(--color-accent)] transition-colors truncate">
+                      {c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}
+                    </h4>
+                    <p className="text-[10px] text-[var(--color-text-muted)] italic truncate">{c.eng}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* 底部分割 + 返回 */}
-        <div className="mt-16 pt-8 border-t border-[var(--color-border)] text-center">
+        <div className="mt-12 pt-8 border-t border-[var(--color-border)] text-center">
           <Link to="/cocktails" className="text-sm text-[var(--color-accent)] hover:underline">
             返回酒谱，探索更多经典
           </Link>

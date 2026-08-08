@@ -54,21 +54,36 @@ function SeventhItem({ item }) {
 export default function SpiritsPage() {
   const [spirits, setSpirits] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showSeventh, setShowSeventh] = useState(false)
 
   useEffect(() => {
-    fetchAPI("/api/spirits")
+    fetchAPI("/api/spirits")
       .then((data) => {
         setSpirits(data)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => { setError(err.message); setLoading(false) })
   }, [])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl mb-3">基酒数据加载失败</p>
+          <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
+          <button onClick={() => window.location.reload()} className="text-sm text-[var(--color-accent)] border border-[var(--color-accent)] rounded-full px-6 py-2 hover:bg-[var(--color-accent)] hover:text-[var(--color-bg-page)] transition-colors">
+            重新加载
+          </button>
+        </div>
       </div>
     )
   }

@@ -21,18 +21,20 @@ export default function SearchPage() {
   const [results, setResults] = useState(null)
   const [parsed, setParsed] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const doSearch = (q) => {
     if (!q.trim()) return
     setLoading(true)
+    setError(null)
     setQuery(q)
-    fetchAPI(`/api/search?q=${encodeURIComponent(q)}`)
+    fetchAPI(`/api/search?q=${encodeURIComponent(q)}`)
       .then((data) => {
         setResults(data.results)
         setParsed(data.parsed)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((err) => { setError(err.message); setLoading(false) })
   }
 
   // 如果导航栏带参数过来，自动搜索
@@ -114,7 +116,7 @@ export default function SearchPage() {
           </div>
 
           {/* 搜索提示 */}
-          {!results && (
+          {!results && !error && (
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
               {hints.map((hint) => (
                 <button
@@ -149,6 +151,16 @@ export default function SearchPage() {
                 </span>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* 搜索错误 */}
+        {error && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
+            <p className="text-[var(--color-text-muted)] text-sm mb-3">搜索请求失败：{error}</p>
+            <button onClick={() => doSearch(query)} className="text-sm text-[var(--color-accent)] hover:underline">
+              重试
+            </button>
           </motion.div>
         )}
 

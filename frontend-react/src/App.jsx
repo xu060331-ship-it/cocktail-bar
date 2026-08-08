@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom"
+import { AuthProvider } from "./lib/auth"
 import Navbar from "./components/Navbar"
 import HomePage from "./pages/HomePage"
 import CocktailsPage from "./pages/CocktailsPage"
@@ -10,6 +11,9 @@ import ArticlesPage from "./pages/ArticlesPage"
 import DailyPage from "./pages/DailyPage"
 import SearchPage from "./pages/SearchPage"
 import AboutPage from "./pages/AboutPage"
+import NotFoundPage from "./pages/NotFoundPage"
+import ProfilePage from "./pages/ProfilePage"
+import PopularPage from "./pages/PopularPage"
 
 function Layout() {
   const location = useLocation()
@@ -25,6 +29,7 @@ function Layout() {
 
 export default function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -38,8 +43,12 @@ export default function App() {
           <Route path="/daily" element={<DailyPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/popular" element={<PopularPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   )
 }

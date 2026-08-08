@@ -26,45 +26,44 @@ export default function WhiskyQA() {
   const [active, setActive] = useState(0)
 
   return (
-    <section className="w-full h-[100dvh] snap-start flex  bg-[var(--color-bg-page)]">
-      <div className="w-full max-w-7xl mx-auto px-5 h-full pt-24 pb-16">
+    <section className="w-full min-h-[100dvh] snap-start flex bg-[var(--color-bg-page)]">
+      <div className="w-full max-w-7xl mx-auto px-5 pt-24 pb-16">
         {/* 标题 */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-14"
+          className="mb-8 md:mb-14"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 font-serif">WHISKY 101</p>
-          <h2 className="text-4xl text-white tracking-[0.08em] font-serif leading-tight">
+          <h2 className="text-3xl md:text-4xl text-white tracking-[0.08em] font-serif leading-tight">
             威士忌入门三问
           </h2>
         </motion.div>
 
-        {/* 左右分栏：左侧问题列表 + 右侧答案展示 */}
-        <div className="flex gap-10 h-[calc(100%-120px)]">
-          {/* 左侧：问题列表 */}
-          <div className="w-[40%] shrink-0 flex flex-col gap-4">
+        {/* 左右分栏：手机端竖排，桌面端横排 */}
+        <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+          {/* 上方/左侧：问题列表 — 手机端用小按钮 */}
+          <div className="md:w-[40%] shrink-0 flex flex-row md:flex-col gap-2 md:gap-4 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
             {qaList.map((item, i) => (
               <motion.button
                 key={item.id}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 onClick={() => setActive(i)}
-                className={`text-left px-7 py-6 rounded-2xl border transition-all duration-500 ${
+                className={`text-left shrink-0 px-4 md:px-7 py-3 md:py-6 rounded-xl md:rounded-2xl border transition-all duration-500 min-w-[140px] md:min-w-0 ${
                   active === i
                     ? "bg-[var(--color-bg-card)] border-[var(--color-accent)]"
-                    : "border-transparent hover:bg-[var(--color-bg-card)] hover:border-[var(--color-border)]"
+                    : "border-[var(--color-border)] md:border-transparent hover:bg-[var(--color-bg-card)] hover:border-[var(--color-border)]"
                 }`}
               >
-                 
-                <span className="text-[10px] text-[var(--color-accent)] tracking-[0.2em] font-serif mb-2 block">
+                <span className="text-[10px] text-[var(--color-accent)] tracking-[0.2em] font-serif mb-1 md:mb-2 block">
                   {item.id}
                 </span>
-                <h3 className={`text-lg font-serif leading-relaxed transition-colors duration-300 ${
+                <h3 className={`text-sm md:text-lg font-serif leading-snug md:leading-relaxed transition-colors duration-300 ${
                   active === i ? "text-white" : "text-[var(--color-text-gray)]"
                 }`}>
                   {item.q}
@@ -73,30 +72,28 @@ export default function WhiskyQA() {
             ))}
           </div>
 
-          {/* 右侧：答案展示 */}
-          <div className="flex-1 flex items-center">
+          {/* 下方/右侧：答案展示 */}
+          <div className="flex-1 flex items-start md:items-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative overflow-hidden bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-10"
+                initial={{ opacity: 0, y: 10, x: 0 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="relative overflow-hidden bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 md:p-10"
               >
-                  <div className="absolute -bottom-6 -right-4 text-[180px] font-serif font-bold
-  text-[var(--color-accent)] opacity-[0.04] leading-none select-none
-  pointer-events-none">
-    {qaList[active].id}
-  </div>
+                <div className="absolute -bottom-6 -right-4 text-[120px] md:text-[180px] font-serif font-bold text-[var(--color-accent)] opacity-[0.04] leading-none select-none pointer-events-none">
+                  {qaList[active].id}
+                </div>
                 <span className="text-[10px] text-[var(--color-accent)] tracking-[0.2em] font-serif mb-4 block">
                   {qaList[active].id} — 答案
                 </span>
-                <p className="text-lg text-[var(--color-text-gray)] leading-relaxed mb-6">
+                <p className="text-sm md:text-lg text-[var(--color-text-gray)] leading-relaxed mb-4 md:mb-6">
                   {qaList[active].a}
                 </p>
-                <div className="border-t border-[var(--color-border)] pt-5">
-                  <p className="text-sm text-[var(--color-text-muted)] leading-relaxed italic">
+                <div className="border-t border-[var(--color-border)] pt-4 md:pt-5">
+                  <p className="text-xs md:text-sm text-[var(--color-text-muted)] leading-relaxed italic">
                     {qaList[active].detail}
                   </p>
                 </div>
