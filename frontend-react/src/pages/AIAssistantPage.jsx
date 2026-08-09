@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { fetchAPI } from "../lib/api"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 import { useAuth } from "../lib/auth"
 import { cocktailHeroImg } from "../lib/images"
 import PersonaSwitcher from "../components/PersonaSwitcher"
