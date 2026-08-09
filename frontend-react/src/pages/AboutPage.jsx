@@ -23,7 +23,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6, delay: 0.15 }}
           >
             <GlassWater size={18} strokeWidth={1.5} className="inline mr-2 text-[var(--color-accent)]" />
-            调酒百科是一个面向中文读者的鸡尾酒知识平台。我们收录了国际调酒师协会（IBA）官方认证的全部 101 款鸡尾酒配方，涵盖传世经典、当代经典和新时代三大类别。
+            调酒百科是一个面向中文读者的鸡尾酒知识平台。我们收录了国际调酒师协会（IBA）官方认证的 101 款鸡尾酒配方，以及 25 款全球酒吧必点经典，涵盖难忘经典、当代经典、新时代和酒吧经典四大类别。
           </motion.p>
 
           <motion.div
@@ -33,7 +33,7 @@ export default function AboutPage() {
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {[
-              { num: "101", label: "款 IBA 官方鸡尾酒" },
+              { num: "126", label: "款经典鸡尾酒" },
               { num: "6", label: "大基酒分类详解" },
               { num: "10", label: "篇深度调酒文化文章" },
             ].map((stat) => (

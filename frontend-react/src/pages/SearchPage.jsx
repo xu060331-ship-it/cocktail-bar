@@ -127,6 +127,14 @@ export default function SearchPage() {
                   {hint}
                 </button>
               ))}
+              <span className="w-full mt-2"></span>
+              <Link
+                to="/ai-assistant"
+                className="text-xs text-[var(--color-accent)]/70 hover:text-[var(--color-accent)] transition-colors flex items-center gap-1"
+              >
+                <Sparkles size={12} strokeWidth={1.5} />
+                不知道想喝什么？让 AI 调酒师跟你聊聊 →
+              </Link>
             </div>
           )}
         </motion.div>
@@ -175,7 +183,15 @@ export default function SearchPage() {
               {results.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-[var(--color-text-muted)] text-lg mb-2">没有找到完全匹配的鸡尾酒</p>
-                  <p className="text-sm text-[var(--color-text-muted)]">试试换个描述，比如"清爽的夏日饮品"或"威士忌调的经典酒"</p>
+                  <p className="text-sm text-[var(--color-text-muted)] mb-4">试试换个描述，比如"清爽的夏日饮品"或"威士忌调的经典酒"</p>
+                  <Link
+                    to="/ai-assistant"
+                    className="inline-flex items-center gap-2 text-sm text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-5 py-2.5 hover:bg-[var(--color-accent)] hover:text-[var(--color-bg-page)] transition-all"
+                  >
+                    <Sparkles size={14} strokeWidth={1.5} />
+                    选不出来？让 AI 调酒师帮你挑
+                    <ArrowRight size={14} strokeWidth={1.5} />
+                  </Link>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

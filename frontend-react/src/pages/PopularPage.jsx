@@ -3,16 +3,25 @@ import { Link } from "react-router-dom"
 import { fetchAPI } from "../lib/api"
 import { cocktailImg } from "../lib/images"
 import { motion } from "framer-motion"
-import { TrendingUp, Eye } from "lucide-react"
+import { TrendingUp, Eye, Star } from "lucide-react"
 
 export default function PopularPage() {
+  const [tab, setTab] = useState("views") // "views" | "ratings"
   const [cocktails, setCocktails] = useState([])
+  const [topRated, setTopRated] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetchAPI("/api/cocktails/popular?limit=20")
-      .then((data) => { setCocktails(data); setLoading(false) })
+    Promise.all([
+      fetchAPI("/api/cocktails/popular?limit=20"),
+      fetchAPI("/api/ratings/top/list?limit=20"),
+    ])
+      .then(([viewsData, ratingsData]) => {
+        setCocktails(viewsData)
+        setTopRated(ratingsData.top)
+        setLoading(false)
+      })
       .catch((err) => { setError(err.message); setLoading(false) })
   }, [])
 
@@ -38,23 +47,53 @@ export default function PopularPage() {
     )
   }
 
+  const currentList = tab === "views" ? cocktails : topRated
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10"
+          className="mb-8"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 flex items-center gap-2">
-            <TrendingUp size={14} strokeWidth={1.5} /> TRENDING
+            <TrendingUp size={14} strokeWidth={1.5} /> RANKING
           </p>
           <h1 className="text-4xl text-white font-serif mb-2">热门排行</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">大家最常看的鸡尾酒，按浏览次数排序</p>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {tab === "views" ? "大家最常看的鸡尾酒，按浏览次数排序" : "酒友真实评分，高分好酒一览"}
+          </p>
         </motion.div>
 
+        {/* Tab switcher */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab("views")}
+            className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-full border transition-all ${
+              tab === "views"
+                ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] border-[var(--color-accent)]"
+                : "text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-accent)]"
+            }`}
+          >
+            <Eye size={13} strokeWidth={1.5} />
+            热门浏览
+          </button>
+          <button
+            onClick={() => setTab("ratings")}
+            className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-full border transition-all ${
+              tab === "ratings"
+                ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] border-[var(--color-accent)]"
+                : "text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-accent)]"
+            }`}
+          >
+            <Star size={13} strokeWidth={1.5} />
+            高分好评
+          </button>
+        </div>
+
         <div className="space-y-3">
-          {cocktails.map((c, i) => (
+          {currentList.map((c, i) => (
             <motion.div
               key={c.eng}
               initial={{ opacity: 0, x: -20 }}
@@ -101,19 +140,31 @@ export default function PopularPage() {
                   )}
                 </div>
 
-                {/* 浏览次数 */}
-                <div className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] shrink-0">
-                  <Eye size={12} strokeWidth={1.5} />
-                  {c.view_count || 0}
+                {/* 数据 */}
+                <div className="flex items-center gap-1 text-xs shrink-0">
+                  {tab === "views" ? (
+                    <>
+                      <Eye size={12} strokeWidth={1.5} className="text-[var(--color-text-muted)]" />
+                      <span className="text-[var(--color-text-muted)]">{c.view_count || 0}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Star size={12} strokeWidth={1.5} className="text-amber-400 fill-amber-400" />
+                      <span className="text-amber-400 font-medium">{c.rating_avg}</span>
+                      <span className="text-[var(--color-text-muted)] ml-0.5">({c.rating_count})</span>
+                    </>
+                  )}
                 </div>
               </Link>
             </motion.div>
           ))}
         </div>
 
-        {cocktails.length === 0 && (
+        {currentList.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-[var(--color-text-muted)]">暂无数据</p>
+            <p className="text-[var(--color-text-muted)]">
+              {tab === "ratings" ? "还没有评分数据，去给喜欢的酒打分吧！" : "暂无数据"}
+            </p>
           </div>
         )}
       </div>

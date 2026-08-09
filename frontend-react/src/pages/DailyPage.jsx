@@ -2,23 +2,27 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { cocktailImg, spiritImg } from "../lib/images"
 import { fetchAPI } from "../lib/api"
+import { useAuth } from "../lib/auth"
 import { motion } from "framer-motion"
 import { ArrowRight, Clock, User, Sparkles } from "lucide-react"
 
 export default function DailyPage() {
+  const { user } = useAuth()
   const [picks, setPicks] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
-    fetchAPI(`/api/daily?date=${today}`)
+    const token = localStorage.getItem("token")
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    fetchAPI(`/api/daily?date=${today}`, { headers })
       .then((data) => {
         setPicks(data)
         setLoading(false)
       })
       .catch((err) => { setError(err.message); setLoading(false) })
-  }, [today])
+  }, [today, user])
 
 
   if (loading) {
@@ -67,7 +71,15 @@ export default function DailyPage() {
             <Sparkles size={18} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">{today}-每日精选</p>
           </div>
-          <h1 className="text-5xl text-white font-serif mb-3">今日推荐</h1>
+          <div className="flex items-center gap-4 mb-3">
+            <h1 className="text-5xl text-white font-serif">今日推荐</h1>
+            {picks.personalized && (
+              <span className="text-xs bg-[var(--color-accent-dim)] text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-3 py-1 flex items-center gap-1">
+                <Sparkles size={11} strokeWidth={1.5} />
+                为你定制
+              </span>
+            )}
+          </div>
           <p className="text-[var(--color-text-gray)] text-lg">
             每天一杯鸡尾酒、一款基酒、两篇文章。由数据库随机选取。
           </p>

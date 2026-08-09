@@ -4,8 +4,11 @@ import { cocktailHeroImg } from "../lib/images"
 import { fetchAPI } from "../lib/api"
 import { useAuth } from "../lib/auth"
 import Breadcrumb from "../components/Breadcrumb"
+import AIDeepAnalysis from "../components/AIDeepAnalysis"
+import StarRating from "../components/StarRating"
+import { useExperience } from "../lib/experience"
 import { motion } from "framer-motion"
-import { ArrowLeft, Clock, GlassWater, Heart, Copy, Check, Share2 } from "lucide-react"
+import { ArrowLeft, Clock, GlassWater, Heart, Copy, Check, Share2, ListPlus, Plus, Coffee } from "lucide-react"
 
 export default function CocktailDetailPage() {
   const { name } = useParams()
@@ -13,9 +16,62 @@ export default function CocktailDetailPage() {
   const [cocktail, setCocktail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [favorited, setFavorited] = useState(false)
+  const { madeSet, tastedSet, toggle: toggleExp } = useExperience()
   const [favLoading, setFavLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [playlists, setPlaylists] = useState([])
+  const [showPlSelector, setShowPlSelector] = useState(false)
+  const [addingToPl, setAddingToPl] = useState(null)
+  const [note, setNote] = useState("")
+  const [noteSaved, setNoteSaved] = useState(false)
+  const [noteLoading, setNoteLoading] = useState(false)
+
+  // 获取用户酒单
+  useEffect(() => {
+    if (!user) return
+    const token = localStorage.getItem("token")
+    fetchAPI("/api/playlists", { headers: { Authorization: `Bearer ${token}` } })
+      .then(d => setPlaylists(d))
+      .catch(() => {})
+  }, [user])
+
+  async function addToPlaylist(plId) {
+    setAddingToPl(plId)
+    const token = localStorage.getItem("token")
+    try {
+      await fetchAPI(`/api/playlists/${plId}/items`, {
+        method: "POST",
+        body: { cocktail_eng: cocktail.eng },
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setShowPlSelector(false)
+    } catch (err) { console.error(err) }
+    setAddingToPl(null)
+  }
+
+  // 加载笔记
+  useEffect(() => {
+    if (!user || !cocktail) return
+    setNoteLoading(true)
+    const token = localStorage.getItem("token")
+    fetchAPI(`/api/notes/${encodeURIComponent(cocktail.eng)}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(d => { if (d?.body) setNote(d.body) })
+      .catch(() => {})
+      .finally(() => setNoteLoading(false))
+  }, [cocktail, user])
+
+  // 保存笔记
+  async function saveNote() {
+    const token = localStorage.getItem("token")
+    await fetchAPI(`/api/notes/${encodeURIComponent(cocktail.eng)}`, {
+      method: "PUT",
+      body: { body: note },
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    setNoteSaved(true)
+    setTimeout(() => setNoteSaved(false), 2000)
+  }
   const [related, setRelated] = useState([])
 
   useEffect(() => {
@@ -162,6 +218,32 @@ export default function CocktailDetailPage() {
                 {favorited ? "已收藏" : "收藏"}
               </button>
             )}
+            {user && (
+              <>
+                <button
+                  onClick={() => toggleExp(cocktail.eng, "made")}
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+                    madeSet.has(cocktail.eng)
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-emerald-400 hover:border-emerald-500/30"
+                  }`}
+                >
+                  <GlassWater size={12} strokeWidth={1.5} />
+                  {madeSet.has(cocktail.eng) ? "已调配" : "调配过"}
+                </button>
+                <button
+                  onClick={() => toggleExp(cocktail.eng, "tasted")}
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+                    tastedSet.has(cocktail.eng)
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                      : "border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-amber-400 hover:border-amber-500/30"
+                  }`}
+                >
+                  <Coffee size={12} strokeWidth={1.5} />
+                  {tastedSet.has(cocktail.eng) ? "已品尝" : "喝过"}
+                </button>
+              </>
+            )}
             <button
               onClick={async () => {
                 await navigator.clipboard.writeText(window.location.href)
@@ -173,6 +255,25 @@ export default function CocktailDetailPage() {
               {linkCopied ? <Check size={12} strokeWidth={1.5} className="text-green-400" /> : <Share2 size={12} strokeWidth={1.5} />}
               {linkCopied ? "已复制链接" : "分享"}
             </button>
+            {user && playlists.length > 0 && (
+              <span className="relative">
+                <button onClick={() => setShowPlSelector(!showPlSelector)}
+                  className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors border border-[var(--color-border)] rounded-full px-2.5 py-1">
+                  <ListPlus size={12} strokeWidth={1.5} /> 加入酒单
+                </button>
+                {showPlSelector && (
+                  <div className="absolute top-full mt-1 right-0 bg-[#1c1813] border border-[var(--color-border)] rounded-xl p-2 shadow-xl z-30 min-w-[160px]">
+                    {playlists.map(pl => (
+                      <button key={pl.id} onClick={() => addToPlaylist(pl.id)} disabled={addingToPl === pl.id}
+                        className="w-full text-left text-xs text-[var(--color-text-gray)] hover:text-white hover:bg-[var(--color-bg-page)] rounded-lg px-3 py-2 transition-colors flex items-center gap-2">
+                        <Plus size={10} /> {pl.name} ({pl.item_count || 0})
+                      </button>
+                    ))}
+                    <Link to="/profile" onClick={() => setShowPlSelector(false)} className="block text-[10px] text-[var(--color-accent)] hover:underline text-center mt-1 pt-1 border-t border-[var(--color-border)]">新建酒单 →</Link>
+                  </div>
+                )}
+              </span>
+            )}
             {cocktail.difficulty && (
               <span className="text-xs bg-[var(--color-bg-page)] text-[var(--color-text-gray)] px-3 py-1 rounded-full border border-[var(--color-border)]">
                 {["", "新手", "入门", "进阶", "专业"][cocktail.difficulty]}
@@ -318,6 +419,52 @@ export default function CocktailDetailPage() {
             </div>
           )}
         </motion.section>
+
+        {/* AI 深度解析 */}
+        <AIDeepAnalysis cocktailEng={cocktail.eng} cocktailData={cocktail} />
+
+        {/* 评分与品鉴 */}
+        <StarRating cocktailEng={cocktail.eng} />
+
+        {/* 调酒笔记（仅登录用户） */}
+        {user && (
+          <motion.section
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-8"
+          >
+            <h2 className="text-lg text-white font-serif mb-4">📝 我的调酒笔记</h2>
+            {noteLoading ? (
+              <p className="text-xs text-[var(--color-text-muted)] animate-pulse">加载中...</p>
+            ) : (
+              <>
+                <textarea
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  placeholder="记录你的试喝感受、配方改编想法、实操心得..."
+                  rows={5}
+                  className="w-full bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-xl p-4 text-sm text-[var(--color-text-gray)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors resize-y"
+                />
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-[10px] text-[var(--color-text-muted)]">
+                    {note.length > 0 ? `${note.length} 字` : "私密笔记，只有你能看到"}
+                  </p>
+                  <button
+                    onClick={saveNote}
+                    className={`text-xs px-5 py-2 rounded-full font-semibold transition-all ${
+                      noteSaved
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-[var(--color-accent)] text-[var(--color-bg-page)] hover:brightness-110"
+                    }`}
+                  >
+                    {noteSaved ? "已保存 ✓" : "保存笔记"}
+                  </button>
+                </div>
+              </>
+            )}
+          </motion.section>
+        )}
 
         {/* 相关推荐 */}
         {related.length > 0 && (

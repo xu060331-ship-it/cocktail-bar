@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@theme {
+/* ====== 暗色主题（默认） ====== */
+:root, [data-theme="dark"] {
   --color-bg-page: #12100d;
   --color-bg-card: #1c1813;
   --color-bg-nav: #0a0806;
@@ -9,34 +10,74 @@
   --color-border: #2a2520;
   --color-text-muted: #8a8078;
   --color-text-gray: #c4b8a8;
+  --color-text-main: #ffffff;
+  --noise-opacity: 0.04;
+  --glow-opacity: 0.15;
+}
+
+/* ====== 亮色主题 ====== */
+[data-theme="light"] {
+  --color-bg-page: #faf7f2;
+  --color-bg-card: #ffffff;
+  --color-bg-nav: #f5f0e8;
+  --color-accent: #b8860b;
+  --color-accent-dim: rgba(184, 134, 11, 0.08);
+  --color-border: #e0d8cc;
+  --color-text-muted: #9c9280;
+  --color-text-gray: #5c5548;
+  --color-text-main: #1a1713;
+  --noise-opacity: 0.02;
+  --glow-opacity: 0.08;
+}
+
+@theme {
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-nav: var(--color-bg-nav);
+  --color-accent: var(--color-accent);
+  --color-accent-dim: var(--color-accent-dim);
+  --color-border: var(--color-border);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-gray: var(--color-text-gray);
 }
 
 /* 全局字体 */
 body {
   font-family: 'Georgia', 'Noto Serif SC', 'SimSun', serif;
   background-color: var(--color-bg-page);
-  color: #fff;
+  color: var(--color-text-main);
   margin: 0;
 }
 
-/* 暖色噪点纹理层 — 呼应 Hero 视频的暗房烟雾颗粒感 */
+/* 暖色噪点纹理层 */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: var(--noise-opacity);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* 全局暗暖色渐变 — 模拟视频中单一暖光源打在暗墙上的氛围 */
+/* 亮色模式下：所有 text-white 自动变暗 */
+[data-theme="light"] .text-white {
+  color: #1a1713;
+}
+
+/* 顶部暖光渐变 */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9998;
   pointer-events: none;
-  opacity: 0.15;
+  opacity: var(--glow-opacity);
   background: radial-gradient(ellipse at 50% 0%, rgba(201, 169, 110, 0.12) 0%, transparent 70%);
+}
+
+/* AI 助手加载动画 — 平滑脉冲 */
+@keyframes dotPulse {
+  0%, 100% { transform: scale(0.6); opacity: 0.35; }
+  50% { transform: scale(1); opacity: 1; }
 }

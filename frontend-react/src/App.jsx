@@ -12,8 +12,15 @@ import DailyPage from "./pages/DailyPage"
 import SearchPage from "./pages/SearchPage"
 import AboutPage from "./pages/AboutPage"
 import NotFoundPage from "./pages/NotFoundPage"
+import RandomPicker from "./components/RandomPicker"
 import ProfilePage from "./pages/ProfilePage"
 import PopularPage from "./pages/PopularPage"
+import PlaylistDetailPage from "./pages/PlaylistDetailPage"
+import AIAssistantPage from "./pages/AIAssistantPage"
+import LearnPage from "./pages/LearnPage"
+import EncyclopediaPage from "./pages/EncyclopediaPage"
+import TasteTestPage from "./pages/TasteTestPage"
+import GettingStartedPage from "./pages/GettingStartedPage"
 
 function Layout() {
   const location = useLocation()
@@ -23,6 +30,7 @@ function Layout() {
     <div className="bg-[var(--color-bg-page)] text-white font-serif min-h-screen">
       <Navbar transparent={isHome} />
       <Outlet />
+      <RandomPicker />
     </div>
   )
 }
@@ -44,7 +52,13 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/playlist/:id" element={<PlaylistDetailPage />} />
           <Route path="/popular" element={<PopularPage />} />
+          <Route path="/ai-assistant" element={<AIAssistantPage />} />
+          <Route path="/learn" element={<LearnPage />} />
+          <Route path="/encyclopedia" element={<EncyclopediaPage />} />
+          <Route path="/taste-test" element={<TasteTestPage />} />
+          <Route path="/getting-started" element={<GettingStartedPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

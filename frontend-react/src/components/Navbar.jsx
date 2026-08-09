@@ -3,12 +3,18 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { GlassWater, Menu, X, LogOut, User, TrendingUp } from "lucide-react"
 import { useAuth } from "../lib/auth"
 import AuthModal from "./AuthModal"
+import ThemeToggle from "./ThemeToggle"
 
 const navLinks = [
+  { to: "/getting-started", label: "新手入门" },
   { to: "/daily", label: "每日推荐" },
+  { to: "/taste-test", label: "口味测试" },
   { to: "/cocktails", label: "酒谱" },
   { to: "/spirits", label: "基酒" },
   { to: "/articles", label: "关于酒" },
+  { to: "/ai-assistant", label: "AI调酒助手" },
+  { to: "/encyclopedia", label: "调酒百科" },
+  { to: "/learn", label: "学习卡片" },
   { to: "/search", label: "智能搜酒" },
 ]
 
@@ -121,8 +127,9 @@ export default function Navbar({ transparent = false }) {
           </nav>
         </div>
 
-        {/* 桌面端右侧：搜索 + 认证 */}
+        {/* 桌面端右侧：搜索 + 主题 + 认证 */}
         <div className="hidden md:flex items-center gap-4">
+          <ThemeToggle />
           <input
             type="text"
             value={navSearch}

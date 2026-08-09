@@ -3,9 +3,10 @@ import { useState, useMemo, useEffect } from "react"
 import { cocktailImg } from "../lib/images"
 import { fetchAPI } from "../lib/api"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, X } from "lucide-react"
+import { Search, X, GlassWater, Coffee } from "lucide-react"
+import { useExperience } from "../lib/experience"
 
-const categories = ["全部", "难忘经典", "当代经典", "新时代"]
+const categories = ["全部", "难忘经典", "当代经典", "新时代", "酒吧经典"]
 const spiritFilters = ["全部", "金酒", "伏特加", "朗姆", "龙舌兰", "威士忌", "白兰地"]
 const tasteFilters = ["全部", "酸甜", "果香", "清爽", "烈", "苦味", "草本", "奶油", "甜味", "辛辣"]
 const difficultyLabels = ["全部", "新手", "入门", "进阶", "专业"]
@@ -49,6 +50,7 @@ export default function CocktailsPage() {
   const [activeDifficulty, setActiveDifficulty] = useState("全部")
   const [activeOccasion, setActiveOccasion] = useState("全部")
   const [search, setSearch] = useState("")
+  const { madeSet, tastedSet } = useExperience()
 
   // 页面加载时从后端拿数据
   useEffect(() => {
@@ -114,10 +116,10 @@ export default function CocktailsPage() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="mb-10"
         >
-          <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">IBA OFFICIAL COCKTAILS</p>
+          <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">126 COCKTAILS & COUNTING</p>
           <h1 className="text-5xl text-white font-serif mb-3">酒谱</h1>
           <p className="text-[var(--color-text-gray)] text-lg">
-            国际调酒师协会（IBA）官方认证的 {allCocktails.length} 款鸡尾酒配方
+            IBA 官方配方 + 全球酒吧经典，共 {allCocktails.length} 款鸡尾酒
           </p>
         </motion.div>
 
@@ -220,13 +222,28 @@ export default function CocktailsPage() {
                   to={`/cocktails/${encodeURIComponent(c.eng)}`}
                   className="block bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 cursor-pointer transition-all duration-500 hover:border-[var(--color-accent)] hover:shadow-[0_0_40px_rgba(201,169,110,0.08)]"
                 >
-                  <div className="w-full h-44 bg-[var(--color-accent-dim)] rounded-xl mb-4 overflow-hidden">
+                  <div className="w-full h-44 bg-[var(--color-accent-dim)] rounded-xl mb-4 overflow-hidden relative">
                     <img
                       src={cocktailImg(c.eng)}
                       alt={c.chnClean || c.eng}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
+                    {/* Experience badges */}
+                    {(madeSet.has(c.eng) || tastedSet.has(c.eng)) && (
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {madeSet.has(c.eng) && (
+                          <span className="text-[9px] bg-emerald-500/90 text-white px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+                            <GlassWater size={9} strokeWidth={2} /> 调配过
+                          </span>
+                        )}
+                        {tastedSet.has(c.eng) && (
+                          <span className="text-[9px] bg-amber-500/90 text-white px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+                            <Coffee size={9} strokeWidth={2} /> 喝过
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-start justify-between mb-3">

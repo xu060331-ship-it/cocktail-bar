@@ -1,6 +1,7 @@
 const { Client } = require("pg")
 const fs = require("fs")
 const cocktailsData = JSON.parse(fs.readFileSync("./data/cocktails.json", "utf-8"))
+const barClassicsData = JSON.parse(fs.readFileSync("./data/bar-classics.json", "utf-8"))
 const methodsData = JSON.parse(fs.readFileSync("./data/cocktail-methods.json", "utf-8"))
 const methodsMap = {}
 methodsData.forEach(m => { methodsMap[m.eng] = { method: m.method, glass: m.glass, steps: m.steps, garnish: m.garnish } })
@@ -414,6 +415,15 @@ async function setup() {
     )
   }
   console.log(`导入 ${cocktailsData.length} 款鸡尾酒（含历史故事）`)
+
+  // 导入酒吧经典（25款非IBA经典）
+  for (const c of barClassicsData) {
+    await client.query(
+      "INSERT INTO cocktails (eng, chn, cat, ingredients, story, method, taste_tags, difficulty, occasion, tip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+      [c.eng, c.chn, c.cat, c.ingredients, JSON.stringify(c.story), JSON.stringify(c.method), c.taste_tags, c.difficulty, c.occasion, c.tip]
+    )
+  }
+  console.log(`导入 ${barClassicsData.length} 款酒吧经典`)
 
   // 清空 + 导入基酒
   await client.query("DELETE FROM spirits")
