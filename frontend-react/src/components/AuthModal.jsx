@@ -69,18 +69,18 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-sm mx-4 bg-[#1c1813] border border-[var(--color-border)] rounded-2xl p-8 shadow-2xl"
+            className="relative z-10 w-full max-w-sm mx-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-8 shadow-2xl"
           >
             {/* 关闭按钮 */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
 
             {/* 标题 */}
-            <h2 className="text-xl text-white font-serif mb-6">
+            <h2 className="text-xl text-[var(--color-text-main)] font-serif mb-6">
               {mode === "login" ? "登录" : "注册"}
             </h2>
 
@@ -94,7 +94,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder="昵称（选填）"
-                    className="w-full bg-[#12100d] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                    className="w-full bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                   />
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="邮箱"
                   required
-                  className="w-full bg-[#12100d] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                  className="w-full bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                 />
               </div>
 
@@ -120,7 +120,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
                   placeholder="密码（至少6位）"
                   required
                   minLength={6}
-                  className="w-full bg-[#12100d] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                  className="w-full bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-xl pl-10 pr-4 py-3 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                 />
               </div>
 
