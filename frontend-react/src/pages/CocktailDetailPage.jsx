@@ -262,7 +262,7 @@ export default function CocktailDetailPage() {
                   <ListPlus size={12} strokeWidth={1.5} /> 加入酒单
                 </button>
                 {showPlSelector && (
-                  <div className="absolute top-full mt-1 right-0 bg-[#1c1813] border border-[var(--color-border)] rounded-xl p-2 shadow-xl z-30 min-w-[160px]">
+                  <div className="absolute top-full mt-1 right-0 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-2 shadow-xl z-30 min-w-[160px]">
                     {playlists.map(pl => (
                       <button key={pl.id} onClick={() => addToPlaylist(pl.id)} disabled={addingToPl === pl.id}
                         className="w-full text-left text-xs text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-page)] rounded-lg px-3 py-2 transition-colors flex items-center gap-2">

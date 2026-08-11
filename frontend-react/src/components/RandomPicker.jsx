@@ -61,7 +61,7 @@ export default function RandomPicker() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 60, scale: 0.95 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-full sm:max-w-sm mx-4 mb-6 sm:mb-0 bg-[#1c1813] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl"
+              className="relative z-10 w-full sm:max-w-sm mx-4 mb-6 sm:mb-0 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl"
             >
               {/* 图片 */}
               <div className="h-48 bg-[var(--color-accent-dim)] overflow-hidden">
