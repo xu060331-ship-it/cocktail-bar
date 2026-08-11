@@ -12,6 +12,7 @@ export default function HeroSection() {
           muted
           loop
           playsInline
+          crossOrigin="anonymous"
           poster="/images/dry-martini.jpg"
           className="w-full h-full object-cover"
         >
