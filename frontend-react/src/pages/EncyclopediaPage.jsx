@@ -63,14 +63,14 @@ export default function EncyclopediaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center pt-24">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center pt-24">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         {/* Header */}
         <motion.div
@@ -83,7 +83,7 @@ export default function EncyclopediaPage() {
             <BookOpen size={18} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">调酒知识库</p>
           </div>
-          <h1 className="text-5xl text-white font-serif mb-3">调酒百科</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">调酒百科</h1>
           <p className="text-[var(--color-text-gray)] text-lg">
             从手法到杯型，从术语到工具——调酒师的完整知识体系。
           </p>
@@ -103,7 +103,7 @@ export default function EncyclopediaPage() {
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="搜索术语、手法、杯型..."
-              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl pl-11 pr-4 py-3 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
             />
           </div>
         </motion.div>
@@ -133,7 +133,7 @@ export default function EncyclopediaPage() {
                       <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2 py-0.5 rounded-full mr-2">
                         {entry.categoryEmoji} {entry.categoryLabel}
                       </span>
-                      <span className="text-sm text-white font-serif">{entry.title}</span>
+                      <span className="text-sm text-[var(--color-text-main)] font-serif">{entry.title}</span>
                     </div>
                     <ChevronRight size={14} strokeWidth={1.5} className="text-[var(--color-text-muted)]" />
                   </div>
@@ -170,7 +170,7 @@ export default function EncyclopediaPage() {
                     <span className="text-3xl">{cat.emoji}</span>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-accent)] group-hover:translate-x-1 transition-all" />
                   </div>
-                  <h3 className="text-lg text-white font-serif mb-1">{cat.label}</h3>
+                  <h3 className="text-lg text-[var(--color-text-main)] font-serif mb-1">{cat.label}</h3>
                   <p className="text-xs text-[var(--color-text-muted)]">{cat.description}</p>
                   <p className="text-[10px] text-[var(--color-text-muted)] mt-2">{cat.entryCount} 个词条</p>
                 </motion.button>
@@ -186,7 +186,7 @@ export default function EncyclopediaPage() {
               {/* Back button */}
               <button
                 onClick={goBack}
-                className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-white transition-colors mb-6"
+                className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors mb-6"
               >
                 <ArrowLeft size={14} strokeWidth={1.5} />
                 返回分类
@@ -195,7 +195,7 @@ export default function EncyclopediaPage() {
               {/* Category header */}
               <div className="mb-6">
                 <span className="text-3xl mr-2">{categoryData?.emoji}</span>
-                <h2 className="text-3xl text-white font-serif mt-2">{categoryData?.label}</h2>
+                <h2 className="text-3xl text-[var(--color-text-main)] font-serif mt-2">{categoryData?.label}</h2>
                 <p className="text-sm text-[var(--color-text-gray)] mt-1">{categoryData?.description}</p>
               </div>
 
@@ -217,7 +217,7 @@ export default function EncyclopediaPage() {
                         className="w-full p-5 text-left flex items-start justify-between gap-4 hover:border-[var(--color-accent)] transition-colors"
                       >
                         <div className="flex-1">
-                          <h3 className="text-base text-white font-serif mb-1">{entry.title}</h3>
+                          <h3 className="text-base text-[var(--color-text-main)] font-serif mb-1">{entry.title}</h3>
                           <p className="text-xs text-[var(--color-text-gray)] leading-relaxed">{entry.summary}</p>
                         </div>
                         <ChevronRight

@@ -154,7 +154,7 @@ export default function TasteTestPage() {
   // Start screen
   if (!started && !result) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,7 +166,7 @@ export default function TasteTestPage() {
             <Sparkles size={16} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">TASTE PROFILE</p>
           </div>
-          <h1 className="text-4xl text-white font-serif mb-4">口味测试</h1>
+          <h1 className="text-4xl text-[var(--color-text-main)] font-serif mb-4">口味测试</h1>
           <p className="text-sm text-[var(--color-text-gray)] leading-relaxed mb-8">
             6 道选择题，找到你的味蕾密码。
             <br />我们会根据你的口味偏好，推荐最适合你的鸡尾酒。
@@ -187,7 +187,7 @@ export default function TasteTestPage() {
   // Results screen
   if (result) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
         <div className="max-w-2xl mx-auto px-5">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -196,7 +196,7 @@ export default function TasteTestPage() {
             className="text-center mb-10"
           >
             <div className="text-5xl mb-4">🍸</div>
-            <h1 className="text-3xl text-white font-serif mb-3">你的味蕾画像</h1>
+            <h1 className="text-3xl text-[var(--color-text-main)] font-serif mb-3">你的味蕾画像</h1>
             <p className="text-sm text-[var(--color-text-gray)]">{result.profile.summary}</p>
           </motion.div>
 
@@ -238,7 +238,7 @@ export default function TasteTestPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <h3 className="text-base text-white font-serif group-hover:text-[var(--color-accent)] transition-colors">
+                        <h3 className="text-base text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">
                           {rec.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || rec.eng}
                         </h3>
                         <span className="text-xs text-[var(--color-accent)] bg-[var(--color-accent-dim)] px-2 py-0.5 rounded-full shrink-0">
@@ -273,7 +273,7 @@ export default function TasteTestPage() {
           >
             <button
               onClick={reset}
-              className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] border border-[var(--color-border)] rounded-full px-5 py-2.5 hover:border-[var(--color-accent)] hover:text-white transition-all"
+              className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] border border-[var(--color-border)] rounded-full px-5 py-2.5 hover:border-[var(--color-accent)] hover:text-[var(--color-text-main)] transition-all"
             >
               <RotateCw size={13} strokeWidth={1.5} />
               再测一次
@@ -310,14 +310,14 @@ export default function TasteTestPage() {
   const progress = ((step) / TOTAL_STEPS) * 100
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-lg mx-auto px-5">
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)] mb-2">
             <span>第 {step + 1} / {TOTAL_STEPS} 题</span>
             {step > 0 && (
-              <button onClick={handleBack} className="flex items-center gap-1 hover:text-white transition-colors">
+              <button onClick={handleBack} className="flex items-center gap-1 hover:text-[var(--color-text-main)] transition-colors">
                 <ArrowLeft size={12} strokeWidth={1.5} />
                 上一题
               </button>
@@ -344,7 +344,7 @@ export default function TasteTestPage() {
           >
             <div className="text-center mb-8">
               <span className="text-5xl block mb-4">{q.icon}</span>
-              <h2 className="text-2xl text-white font-serif mb-2">{q.title}</h2>
+              <h2 className="text-2xl text-[var(--color-text-main)] font-serif mb-2">{q.title}</h2>
               <p className="text-sm text-[var(--color-text-gray)]">{q.subtitle}</p>
             </div>
 
@@ -362,7 +362,7 @@ export default function TasteTestPage() {
                 >
                   <span className="text-2xl shrink-0">{opt.emoji}</span>
                   <div className="flex-1">
-                    <p className="text-white text-sm font-medium">{opt.label}</p>
+                    <p className="text-[var(--color-text-main)] text-sm font-medium">{opt.label}</p>
                     <p className="text-xs text-[var(--color-text-muted)]">{opt.desc}</p>
                   </div>
                   {answers[q.id] === opt.value && (

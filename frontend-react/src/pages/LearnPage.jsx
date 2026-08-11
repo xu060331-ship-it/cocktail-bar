@@ -122,7 +122,7 @@ export default function LearnPage() {
   const masteryPercent = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         {/* Header */}
         <motion.div
@@ -135,7 +135,7 @@ export default function LearnPage() {
             <Sparkles size={18} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">调酒知识训练</p>
           </div>
-          <h1 className="text-5xl text-white font-serif mb-3">学习卡片</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">学习卡片</h1>
           <p className="text-[var(--color-text-gray)] text-lg">
             翻转卡片，掌握调酒知识。从入门到高级，像刷单词一样刷鸡尾酒。
           </p>
@@ -150,12 +150,12 @@ export default function LearnPage() {
         >
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 text-center">
             <BarChart3 size={18} strokeWidth={1.5} className="mx-auto mb-2 text-[var(--color-text-muted)]" />
-            <p className="text-2xl text-white font-medium">{stats.total}</p>
+            <p className="text-2xl text-[var(--color-text-main)] font-medium">{stats.total}</p>
             <p className="text-[10px] text-[var(--color-text-muted)] tracking-wider">卡片总数</p>
           </div>
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 text-center">
             <Trophy size={18} strokeWidth={1.5} className="mx-auto mb-2 text-emerald-400" />
-            <p className="text-2xl text-white font-medium">{stats.mastered}</p>
+            <p className="text-2xl text-[var(--color-text-main)] font-medium">{stats.mastered}</p>
             <p className="text-[10px] text-[var(--color-text-muted)] tracking-wider">已掌握</p>
           </div>
           <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 text-center">
@@ -172,7 +172,7 @@ export default function LearnPage() {
                   className="transition-all duration-700"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-sm text-white font-medium">
+              <span className="absolute inset-0 flex items-center justify-center text-sm text-[var(--color-text-main)] font-medium">
                 {masteryPercent}%
               </span>
             </div>
@@ -196,7 +196,7 @@ export default function LearnPage() {
                 shrink-0 text-xs px-3.5 py-1.5 rounded-full border transition-all duration-200
                 ${category === opt.key
                   ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] border-[var(--color-accent)]"
-                  : "text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-accent)] hover:text-white"
+                  : "text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-accent)] hover:text-[var(--color-text-main)]"
                 }
               `}
             >

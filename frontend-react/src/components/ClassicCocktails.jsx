@@ -48,7 +48,7 @@ export default function ClassicCocktails() {
           {/* 区块标题 */}
           <div className="mb-8">
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 font-serif">IBA OFFICIAL</p>
-            <h2 className="text-4xl text-white tracking-[0.08em] font-serif leading-tight">
+            <h2 className="text-4xl text-[var(--color-text-main)] tracking-[0.08em] font-serif leading-tight">
               经典鸡尾酒
             </h2>
           </div>
@@ -66,7 +66,7 @@ export default function ClassicCocktails() {
                   <span className="text-[11px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-3 py-1 rounded-full">{feature.spirit}</span>
                   <span className="text-[11px] bg-[var(--color-border)] text-[var(--color-text-gray)] px-3 py-1 rounded-full">{feature.method}</span>
                 </div>
-                <h3 className="text-2xl text-white font-serif mb-1">{feature.name}</h3>
+                <h3 className="text-2xl text-[var(--color-text-main)] font-serif mb-1">{feature.name}</h3>
                 <p className="text-xs text-[var(--color-text-muted)] italic mb-4">{feature.eng}</p>
                 <p className="text-sm text-[var(--color-text-gray)] leading-relaxed mb-4">{feature.desc}</p>
               </div>
@@ -108,7 +108,7 @@ export default function ClassicCocktails() {
                 {/* 信息 */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg text-white font-serif">{c.name}</h3>
+                    <h3 className="text-lg text-[var(--color-text-main)] font-serif">{c.name}</h3>
                     <span className="text-xs text-[var(--color-text-muted)] italic">{c.eng}</span>
                   </div>
                   <div className="flex gap-2 mb-1.5">

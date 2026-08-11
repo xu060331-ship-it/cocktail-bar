@@ -63,7 +63,7 @@ function SpiritCard({ s, index, isHovered, onHover, onLeave }) {
           <Icon size={28} strokeWidth={1.5} className="text-[var(--color-accent)]" />
         </div>
         <div>
-          <h3 className="text-lg text-white font-serif leading-none mb-1">{s.name}</h3>
+          <h3 className="text-lg text-[var(--color-text-main)] font-serif leading-none mb-1">{s.name}</h3>
           <p className="text-[11px] text-[var(--color-text-muted)] italic tracking-wide">{s.eng}</p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function BaseSpirits() {
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 font-serif">
             THE FOUNDATION
           </p>
-          <h2 className="text-3xl md:text-4xl text-white tracking-[0.08em] font-serif leading-tight">
+          <h2 className="text-3xl md:text-4xl text-[var(--color-text-main)] tracking-[0.08em] font-serif leading-tight">
             六大基酒
           </h2>
           <p className="text-sm md:text-base text-[var(--color-text-muted)] italic tracking-wide mt-2">

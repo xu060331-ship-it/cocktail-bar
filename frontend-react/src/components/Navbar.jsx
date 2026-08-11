@@ -59,7 +59,7 @@ export default function Navbar({ transparent = false }) {
           )}
           <button
             onClick={() => { logout(); setMenuOpen(false) }}
-            className={`text-sm text-[var(--color-text-muted)] hover:text-white transition-colors flex items-center gap-1 ${mobile ? "w-full justify-center py-2 border border-[var(--color-border)] rounded-full" : ""}`}
+            className={`text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors flex items-center gap-1 ${mobile ? "w-full justify-center py-2 border border-[var(--color-border)] rounded-full" : ""}`}
           >
             <LogOut size={14} strokeWidth={1.5} />
             {mobile ? "退出登录" : ""}
@@ -72,7 +72,7 @@ export default function Navbar({ transparent = false }) {
       <div className={`flex ${mobile ? "gap-3 w-full" : "gap-3"}`}>
         <button
           onClick={() => { setAuthMode("login"); setAuthOpen(true); setMenuOpen(false) }}
-          className={`text-sm text-[var(--color-text-gray)] hover:text-white transition-colors ${mobile ? "flex-1 text-center border border-[var(--color-border)] rounded-full py-2.5" : ""}`}
+          className={`text-sm text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] transition-colors ${mobile ? "flex-1 text-center border border-[var(--color-border)] rounded-full py-2.5" : ""}`}
         >
           登录
         </button>
@@ -117,7 +117,7 @@ export default function Navbar({ transparent = false }) {
                   className={`text-sm transition-colors whitespace-nowrap ${
                     isActive
                       ? "text-[var(--color-accent)]"
-                      : "text-[var(--color-text-gray)] hover:text-white"
+                      : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
                   }`}
                 >
                   {link.label}
@@ -136,7 +136,7 @@ export default function Navbar({ transparent = false }) {
             onChange={(e) => setNavSearch(e.target.value)}
             onKeyDown={handleNavSearch}
             placeholder="搜索酒名、基酒、口味"
-            className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none w-56"
+            className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none w-56"
           />
           <AuthButtons />
         </div>
@@ -144,7 +144,7 @@ export default function Navbar({ transparent = false }) {
         {/* 手机端：汉堡按钮 */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-[var(--color-text-gray)] hover:text-white transition-colors p-2"
+          className="md:hidden text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] transition-colors p-2"
         >
           {menuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
         </button>
@@ -163,7 +163,7 @@ export default function Navbar({ transparent = false }) {
                     className={`text-base py-1 transition-colors ${
                       isActive
                         ? "text-[var(--color-accent)]"
-                        : "text-[var(--color-text-gray)] hover:text-white"
+                        : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
                     }`}
                   >
                     {link.label}
@@ -178,7 +178,7 @@ export default function Navbar({ transparent = false }) {
                 onChange={(e) => setNavSearch(e.target.value)}
                 onKeyDown={handleNavSearch}
                 placeholder="搜索酒名、口味..."
-                className="flex-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2.5 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none"
+                className="flex-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2.5 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none"
               />
             </div>
             <div className="flex gap-3 px-6 pb-5">

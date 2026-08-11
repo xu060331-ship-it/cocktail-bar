@@ -21,7 +21,7 @@ export default function ArticleDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -29,7 +29,7 @@ export default function ArticleDetailPage() {
 
   if (!article || article.error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-4">文章未找到</p>
           <Link to="/articles" className="text-[var(--color-accent)] hover:underline">返回关于酒</Link>
@@ -39,7 +39,7 @@ export default function ArticleDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-3xl mx-auto px-5">
         <Link to="/articles" className="inline-flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors mb-12">
           <ArrowLeft size={16} strokeWidth={1.5} />
@@ -58,7 +58,7 @@ export default function ArticleDetailPage() {
           <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full mb-4 inline-block">
             {article.cat}
           </span>
-          <h1 className="text-4xl md:text-5xl text-white font-serif leading-tight mb-6">{article.title}</h1>
+          <h1 className="text-4xl md:text-5xl text-[var(--color-text-main)] font-serif leading-tight mb-6">{article.title}</h1>
           <div className="flex items-center gap-4 text-sm text-[var(--color-text-muted)] mb-12">
             <span className="flex items-center gap-1"><User size={14} strokeWidth={1.5} /> {article.author}</span>
             <span className="flex items-center gap-1"><Clock size={14} strokeWidth={1.5} /> {article.read_time}</span>

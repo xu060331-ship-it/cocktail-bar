@@ -143,7 +143,7 @@ export default function CocktailDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -151,7 +151,7 @@ export default function CocktailDetailPage() {
 
   if (!cocktail || cocktail.error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-4">未找到该鸡尾酒</p>
           <Link to="/cocktails" className="text-[var(--color-accent)] hover:underline">返回酒谱</Link>
@@ -161,7 +161,7 @@ export default function CocktailDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif">
       {/* 返回按钮 */}
       <div className="fixed top-20 left-6 z-40">
         <Link
@@ -199,7 +199,7 @@ export default function CocktailDetailPage() {
           className="mb-16"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-4">{cocktail.eng?.toUpperCase()}</p>
-          <h1 className="text-5xl md:text-6xl text-white font-serif leading-tight mb-4">{cocktail.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || cocktail.eng}</h1>
+          <h1 className="text-5xl md:text-6xl text-[var(--color-text-main)] font-serif leading-tight mb-4">{cocktail.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || cocktail.eng}</h1>
           <p className="text-lg text-[var(--color-text-muted)] italic">{cocktail.eng}</p>
 
           <div className="flex flex-wrap gap-3 mt-6 items-center">
@@ -265,7 +265,7 @@ export default function CocktailDetailPage() {
                   <div className="absolute top-full mt-1 right-0 bg-[#1c1813] border border-[var(--color-border)] rounded-xl p-2 shadow-xl z-30 min-w-[160px]">
                     {playlists.map(pl => (
                       <button key={pl.id} onClick={() => addToPlaylist(pl.id)} disabled={addingToPl === pl.id}
-                        className="w-full text-left text-xs text-[var(--color-text-gray)] hover:text-white hover:bg-[var(--color-bg-page)] rounded-lg px-3 py-2 transition-colors flex items-center gap-2">
+                        className="w-full text-left text-xs text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-page)] rounded-lg px-3 py-2 transition-colors flex items-center gap-2">
                         <Plus size={10} /> {pl.name} ({pl.item_count || 0})
                       </button>
                     ))}
@@ -311,7 +311,7 @@ export default function CocktailDetailPage() {
               </span>
               <div className="flex-1 h-px bg-[var(--color-border)]" />
             </div>
-            <h2 className="text-2xl text-white font-serif mb-6 leading-snug">{section.title}</h2>
+            <h2 className="text-2xl text-[var(--color-text-main)] font-serif mb-6 leading-snug">{section.title}</h2>
             {section.body.split("\n\n").map((para, pi) => (
               <p key={pi} className="text-[var(--color-text-gray)] leading-loose text-base mb-5">
                 {para.trim()}
@@ -330,7 +330,7 @@ export default function CocktailDetailPage() {
         >
           <div className="flex items-center gap-3 mb-8">
             <GlassWater size={18} strokeWidth={1.5} className="text-[var(--color-accent)]" />
-            <h2 className="text-xl text-white font-serif">配方与调制</h2>
+            <h2 className="text-xl text-[var(--color-text-main)] font-serif">配方与调制</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -434,7 +434,7 @@ export default function CocktailDetailPage() {
             viewport={{ once: true }}
             className="mt-12 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-8"
           >
-            <h2 className="text-lg text-white font-serif mb-4">📝 我的调酒笔记</h2>
+            <h2 className="text-lg text-[var(--color-text-main)] font-serif mb-4">📝 我的调酒笔记</h2>
             {noteLoading ? (
               <p className="text-xs text-[var(--color-text-muted)] animate-pulse">加载中...</p>
             ) : (
@@ -481,7 +481,7 @@ export default function CocktailDetailPage() {
                     <img src={cocktailHeroImg(c.eng)} alt={c.eng} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                   </div>
                   <div className="p-3">
-                    <h4 className="text-sm text-white font-serif group-hover:text-[var(--color-accent)] transition-colors truncate">
+                    <h4 className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors truncate">
                       {c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}
                     </h4>
                     <p className="text-[10px] text-[var(--color-text-muted)] italic truncate">{c.eng}</p>

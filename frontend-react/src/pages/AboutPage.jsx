@@ -4,7 +4,7 @@ import { GlassWater, ArrowRight } from "lucide-react"
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-3xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -13,7 +13,7 @@ export default function AboutPage() {
           className="mb-16"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">ABOUT</p>
-          <h1 className="text-5xl text-white font-serif mb-4">关于我们</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-4">关于我们</h1>
         </motion.div>
 
         <div className="space-y-12 text-[var(--color-text-gray)] leading-loose">

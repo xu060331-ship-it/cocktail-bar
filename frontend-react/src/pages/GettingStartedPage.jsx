@@ -172,7 +172,7 @@ export default function GettingStartedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-3xl mx-auto px-5">
         {/* Header */}
         <motion.div
@@ -185,7 +185,7 @@ export default function GettingStartedPage() {
             <Sparkles size={18} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">NEWBIE GUIDE</p>
           </div>
-          <h1 className="text-5xl text-white font-serif mb-3">新手入门</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">新手入门</h1>
           <p className="text-[var(--color-text-gray)] text-lg leading-relaxed">
             从零开始，五步走进鸡尾酒的世界。每完成一步就勾掉——像打游戏通关一样。
           </p>
@@ -199,7 +199,7 @@ export default function GettingStartedPage() {
           className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 mb-10"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-white font-serif">总体进度</span>
+            <span className="text-sm text-[var(--color-text-main)] font-serif">总体进度</span>
             <span className="text-sm text-[var(--color-accent)]">{completedSteps}/{totalSteps} 步 · {overallPercent}%</span>
           </div>
           <div className="h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
@@ -251,7 +251,7 @@ export default function GettingStartedPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="text-lg text-white font-serif">{stage.title}</h3>
+                      <h3 className="text-lg text-[var(--color-text-main)] font-serif">{stage.title}</h3>
                       {complete && (
                         <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
                           已完成
@@ -304,7 +304,7 @@ export default function GettingStartedPage() {
                                     : "border-[var(--color-border)] hover:border-[var(--color-accent)]"
                                 }`}
                               >
-                                {done && <Check size={12} strokeWidth={3} className="text-white" />}
+                                {done && <Check size={12} strokeWidth={3} className="text-[var(--color-text-main)]" />}
                               </button>
 
                               {/* Label */}
@@ -354,7 +354,7 @@ export default function GettingStartedPage() {
               <Link
                 key={tool.to}
                 to={tool.to}
-                className="flex items-center gap-2 text-xs bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2 hover:border-[var(--color-accent)] hover:text-white transition-all text-[var(--color-text-muted)]"
+                className="flex items-center gap-2 text-xs bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2 hover:border-[var(--color-accent)] hover:text-[var(--color-text-main)] transition-all text-[var(--color-text-muted)]"
               >
                 <tool.icon size={13} strokeWidth={1.5} />
                 {tool.label}

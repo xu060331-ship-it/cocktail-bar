@@ -35,7 +35,7 @@ function SeventhItem({ item }) {
   return (
     <div onClick={() => setOpen(!open)} className="cursor-pointer group">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-[var(--color-text-gray)] group-hover:text-white transition-colors">{item.name}</span>
+        <span className="text-sm text-[var(--color-text-gray)] group-hover:text-[var(--color-text-main)] transition-colors">{item.name}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }} className="shrink-0">
           <ChevronDown size={12} strokeWidth={1.5} className="text-[var(--color-text-muted)]" />
         </motion.div>
@@ -68,7 +68,7 @@ export default function SpiritsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -76,7 +76,7 @@ export default function SpiritsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-3">基酒数据加载失败</p>
           <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
@@ -89,7 +89,7 @@ export default function SpiritsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-5">
         {/* 标题 */}
         <motion.div
@@ -99,7 +99,7 @@ export default function SpiritsPage() {
           className="mb-14"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">THE FOUNDATION</p>
-          <h1 className="text-5xl text-white font-serif mb-3">基酒百科</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">基酒百科</h1>
           <p className="text-[var(--color-text-gray)] text-lg max-w-2xl">
             六大基酒是所有鸡尾酒的起点。选择一款基酒，探索它的世界——从产地到风味，从经典配方到你尚未听说的变奏。
           </p>
@@ -125,7 +125,7 @@ export default function SpiritsPage() {
                     <img src={spiritImg(s.slug || s.eng)} alt={s.name} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div>
-                    <h3 className="text-2xl text-white font-serif">{s.name}</h3>
+                    <h3 className="text-2xl text-[var(--color-text-main)] font-serif">{s.name}</h3>
                     <p className="text-xs text-[var(--color-text-muted)] italic tracking-wide">{s.eng}</p>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export default function SpiritsPage() {
             <div className="flex items-center gap-4">
               <Sparkles size={22} strokeWidth={1.5} className="text-[var(--color-accent)]" />
               <div>
-                <h3 className="text-xl text-white font-serif">第七大基酒？</h3>
+                <h3 className="text-xl text-[var(--color-text-main)] font-serif">第七大基酒？</h3>
                 <p className="text-sm text-[var(--color-text-muted)] mt-1">利口酒、加强酒、苦酒——那些不属于六大基酒但不可或缺的存在</p>
               </div>
             </div>

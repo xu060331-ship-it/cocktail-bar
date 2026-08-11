@@ -62,7 +62,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         {/* 标题 */}
         <motion.div
@@ -75,7 +75,7 @@ export default function SearchPage() {
             <Sparkles size={20} strokeWidth={1.5} className="text-[var(--color-accent)]" />
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">SMART SEARCH</p>
           </div>
-          <h1 className="text-5xl text-white font-serif mb-3">智能搜酒</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">智能搜酒</h1>
           <p className="text-[var(--color-text-gray)] text-lg">
             用自然语言描述你想喝什么——"我有金酒想喝酸的"——我来帮你找
           </p>
@@ -96,12 +96,12 @@ export default function SearchPage() {
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               placeholder="例如：我有金酒和柠檬，能调什么？"
-              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl pl-14 pr-24 py-5 text-lg text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl pl-14 pr-24 py-5 text-lg text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
             />
             {query && (
               <button
                 onClick={handleClear}
-                className="absolute right-28 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-white p-2 transition-colors"
+                className="absolute right-28 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] p-2 transition-colors"
               >
                 ✕
               </button>
@@ -210,7 +210,7 @@ export default function SearchPage() {
                           <img src={cocktailImg(c.eng)} alt={c.eng} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-base text-white font-serif group-hover:text-[var(--color-accent)] transition-colors">
+                          <h3 className="text-base text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">
                             {c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}
                           </h3>
                           <p className="text-xs text-[var(--color-text-muted)] italic mb-1">{c.eng}</p>

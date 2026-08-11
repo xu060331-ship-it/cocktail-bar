@@ -25,7 +25,7 @@ export default function ArticlesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -33,7 +33,7 @@ export default function ArticlesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-3">文章加载失败</p>
           <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
@@ -49,7 +49,7 @@ export default function ArticlesPage() {
   const rest = activeCat === "全部" ? articles.slice(1) : articles.filter((a) => a.cat === activeCat)
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -58,7 +58,7 @@ export default function ArticlesPage() {
           className="mb-12"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">LEARN & EXPLORE</p>
-          <h1 className="text-5xl text-white font-serif mb-3">关于酒</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">关于酒</h1>
           <p className="text-[var(--color-text-gray)] text-lg">鸡尾酒的历史、酿造的科学、调酒师的哲学。</p>
         </motion.div>
 
@@ -68,7 +68,7 @@ export default function ArticlesPage() {
               key={cat}
               onClick={() => setActiveCat(cat)}
               className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
-                activeCat === cat ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "bg-[var(--color-bg-card)] text-[var(--color-text-gray)] hover:text-white border border-[var(--color-border)] hover:border-[var(--color-accent)]"
+                activeCat === cat ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "bg-[var(--color-bg-card)] text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] border border-[var(--color-border)] hover:border-[var(--color-accent)]"
               }`}
             >
               {cat}
@@ -94,7 +94,7 @@ export default function ArticlesPage() {
                 </div>
                 <div className="flex-1 p-10 flex flex-col justify-center">
                   <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full self-start mb-4">{featured.cat}</span>
-                  <h2 className="text-2xl lg:text-3xl text-white font-serif leading-snug mb-4 group-hover:text-[var(--color-accent)] transition-colors">{featured.title}</h2>
+                  <h2 className="text-2xl lg:text-3xl text-[var(--color-text-main)] font-serif leading-snug mb-4 group-hover:text-[var(--color-accent)] transition-colors">{featured.title}</h2>
                   <p className="text-sm text-[var(--color-text-gray)] leading-relaxed mb-6">{featured.summary}</p>
                   <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
                     <span className="flex items-center gap-1"><User size={12} strokeWidth={1.5} /> {featured.author}</span>
@@ -127,7 +127,7 @@ export default function ArticlesPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full">{article.cat}</span>
                 </div>
-                <h3 className="text-base text-white font-serif leading-snug mb-2 group-hover:text-[var(--color-accent)] transition-colors">{article.title}</h3>
+                <h3 className="text-base text-[var(--color-text-main)] font-serif leading-snug mb-2 group-hover:text-[var(--color-accent)] transition-colors">{article.title}</h3>
                 <p className="text-xs text-[var(--color-text-gray)] leading-relaxed mb-3 line-clamp-2">{article.summary}</p>
                 <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
                   <span className="flex items-center gap-1"><User size={12} strokeWidth={1.5} /> {article.author}</span>

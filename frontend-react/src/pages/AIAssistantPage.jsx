@@ -233,7 +233,7 @@ export default function AIAssistantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-20">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
         {/* 页面标题 */}
         <motion.div
@@ -244,7 +244,7 @@ export default function AIAssistantPage() {
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Sparkles size={28} strokeWidth={1.5} className="text-[var(--color-accent)]" />
-            <h1 className="text-3xl md:text-4xl text-white font-serif">AI 调酒助手</h1>
+            <h1 className="text-3xl md:text-4xl text-[var(--color-text-main)] font-serif">AI 调酒助手</h1>
           </div>
           <div className="flex items-center justify-center gap-2 mb-3">
             <PersonaSwitcher
@@ -315,7 +315,7 @@ export default function AIAssistantPage() {
                           <button
                             key={i}
                             onClick={() => sendMessage(qq.prompt)}
-                            className="flex items-center gap-2 text-left text-xs text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-page)] hover:bg-[var(--color-accent-dim)] rounded-xl p-3 transition-colors border border-[var(--color-border)]"
+                            className="flex items-center gap-2 text-left text-xs text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-page)] hover:bg-[var(--color-accent-dim)] rounded-xl p-3 transition-colors border border-[var(--color-border)]"
                           >
                             <Icon size={14} strokeWidth={1.5} className="text-[var(--color-accent)] shrink-0" />
                             <span className="line-clamp-2">{qq.text}</span>
@@ -351,7 +351,7 @@ export default function AIAssistantPage() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
                     placeholder="输入调酒问题..."
-                    className="flex-1 bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-full px-5 py-3 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+                    className="flex-1 bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-full px-5 py-3 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
                   />
                   <button
                     onClick={() => sendMessage(input)}
@@ -370,7 +370,7 @@ export default function AIAssistantPage() {
             <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-5 md:p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Wine size={16} strokeWidth={1.5} className="text-[var(--color-accent)]" />
-                <h3 className="text-base text-white font-serif">智能推荐</h3>
+                <h3 className="text-base text-[var(--color-text-main)] font-serif">智能推荐</h3>
               </div>
 
               {/* 心情 */}
@@ -558,7 +558,7 @@ export default function AIAssistantPage() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
-                                      <h4 className="text-sm text-white font-serif group-hover:text-[var(--color-accent)] transition-colors truncate">
+                                      <h4 className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors truncate">
                                         {rec.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || rec.eng}
                                       </h4>
                                       {rec.matchScore && (

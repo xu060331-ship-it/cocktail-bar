@@ -57,7 +57,7 @@ export default function PersonaSwitcher({ currentId, onSwitch, onMemoryLoaded })
         className="flex items-center gap-2 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-3 py-1.5 hover:border-[var(--color-accent)] transition-all group"
       >
         <span className="text-lg">{current?.avatar || "🍸"}</span>
-        <span className="text-xs text-[var(--color-text-gray)] group-hover:text-white transition-colors">
+        <span className="text-xs text-[var(--color-text-gray)] group-hover:text-[var(--color-text-main)] transition-colors">
           {current?.name || "小酒"}
         </span>
         <span className="text-[9px] text-[var(--color-text-muted)]">{current?.label || ""}</span>
@@ -97,7 +97,7 @@ export default function PersonaSwitcher({ currentId, onSwitch, onMemoryLoaded })
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-sm font-serif ${isActive ? "text-[var(--color-accent)]" : "text-white"}`}>
+                        <span className={`text-sm font-serif ${isActive ? "text-[var(--color-accent)]" : "text-[var(--color-text-main)]"}`}>
                           {p.name}
                         </span>
                         <span className="text-[9px] text-[var(--color-text-muted)]">{p.label}</span>

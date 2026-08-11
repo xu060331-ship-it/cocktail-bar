@@ -4,7 +4,7 @@ import { ArrowLeft, Home } from "lucide-react"
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
       <div className="text-center px-5">
         <motion.p
           initial={{ opacity: 0, y: 24 }}
@@ -19,7 +19,7 @@ export default function NotFoundPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="text-xl md:text-2xl text-white mb-3"
+          className="text-xl md:text-2xl text-[var(--color-text-main)] mb-3"
         >
           页面未找到
         </motion.p>
@@ -48,7 +48,7 @@ export default function NotFoundPage() {
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-white transition-colors border border-[var(--color-border)] rounded-full px-5 py-3"
+            className="inline-flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] transition-colors border border-[var(--color-border)] rounded-full px-5 py-3"
           >
             <ArrowLeft size={16} strokeWidth={1.5} />
             返回上页

@@ -25,7 +25,7 @@ export default function Footer() {
             调酒百科
           </Link>
 
-          <h2 className="text-3xl md:text-5xl lg:text-6xl text-white font-serif leading-tight mb-8 max-w-2xl">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl text-[var(--color-text-main)] font-serif leading-tight mb-8 max-w-2xl">
             每一杯酒，
             <br />
             都有一段横跨百年

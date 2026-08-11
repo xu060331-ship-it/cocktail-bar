@@ -27,7 +27,7 @@ function Layout() {
   const isHome = location.pathname === "/"
 
   return (
-    <div className="bg-[var(--color-bg-page)] text-white font-serif min-h-screen">
+    <div className="bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif min-h-screen">
       <Navbar transparent={isHome} />
       <Outlet />
       <RandomPicker />

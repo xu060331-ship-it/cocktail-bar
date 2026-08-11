@@ -26,18 +26,18 @@ export default function PlaylistDetailPage() {
     setData({ ...data, cocktails: data.cocktails.filter(c => c.eng !== eng) })
   }
 
-  if (loading) return <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 flex items-center justify-center"><p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p></div>
-  if (!data) return <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 flex items-center justify-center"><p className="text-xl text-[var(--color-text-muted)]">酒单不存在</p></div>
+  if (loading) return <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 flex items-center justify-center"><p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p></div>
+  if (!data) return <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 flex items-center justify-center"><p className="text-xl text-[var(--color-text-muted)]">酒单不存在</p></div>
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-3xl mx-auto px-5">
         <Link to="/profile" className="flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors mb-6">
           <ArrowLeft size={14} /> 返回个人中心
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl text-white font-serif mb-2">{data.playlist.name}</h1>
+          <h1 className="text-3xl text-[var(--color-text-main)] font-serif mb-2">{data.playlist.name}</h1>
           {data.playlist.description && <p className="text-sm text-[var(--color-text-muted)]">{data.playlist.description}</p>}
           <p className="text-xs text-[var(--color-text-muted)] mt-3">{data.cocktails.length} 款酒</p>
         </motion.div>
@@ -56,7 +56,7 @@ export default function PlaylistDetailPage() {
                     <Link to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-4 flex-1 min-w-0">
                       <div className="w-12 h-12 rounded-lg bg-[var(--color-accent-dim)] overflow-hidden shrink-0"><img src={cocktailImg(c.eng)} alt={c.eng} className="w-full h-full object-cover" /></div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm text-white font-serif group-hover:text-[var(--color-accent)] transition-colors">
+                        <h3 className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">
                           {c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}
                         </h3>
                         <p className="text-xs text-[var(--color-text-muted)] italic">{c.eng}</p>

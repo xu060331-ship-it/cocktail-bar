@@ -75,7 +75,7 @@ export default function RandomPicker() {
               {/* 关闭按钮 */}
               <button
                 onClick={close}
-                className="absolute top-3 right-3 bg-black/40 backdrop-blur rounded-full p-1.5 text-white hover:bg-black/60 transition-colors"
+                className="absolute top-3 right-3 bg-black/40 backdrop-blur rounded-full p-1.5 text-[var(--color-text-main)] hover:bg-black/60 transition-colors"
               >
                 <X size={16} strokeWidth={1.5} />
               </button>
@@ -87,7 +87,7 @@ export default function RandomPicker() {
                   <p className="text-xs text-[var(--color-accent)] tracking-wide">今天试试这杯</p>
                 </div>
 
-                <h3 className="text-xl text-white font-serif mb-1">
+                <h3 className="text-xl text-[var(--color-text-main)] font-serif mb-1">
                   {cocktail.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || cocktail.eng}
                 </h3>
                 <p className="text-xs text-[var(--color-text-muted)] italic mb-4">{cocktail.eng}</p>
@@ -115,7 +115,7 @@ export default function RandomPicker() {
                   <button
                     onClick={pickRandom}
                     disabled={loading}
-                    className="flex items-center justify-center gap-1 border border-[var(--color-border)] text-[var(--color-text-gray)] hover:text-white rounded-xl px-4 py-2.5 text-sm transition-colors"
+                    className="flex items-center justify-center gap-1 border border-[var(--color-border)] text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] rounded-xl px-4 py-2.5 text-sm transition-colors"
                   >
                     <Shuffle size={14} strokeWidth={1.5} className={loading ? "animate-spin" : ""} />
                   </button>

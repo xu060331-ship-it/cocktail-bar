@@ -27,7 +27,7 @@ export default function DailyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -35,7 +35,7 @@ export default function DailyPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-3">每日推荐加载失败</p>
           <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
@@ -49,7 +49,7 @@ export default function DailyPage() {
 
   if (!picks) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)]">暂无推荐数据</p>
       </div>
     )
@@ -59,7 +59,7 @@ export default function DailyPage() {
   const spirit = picks.spirit
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -72,7 +72,7 @@ export default function DailyPage() {
             <p className="text-xs tracking-[0.3em] text-[var(--color-accent)]">{today}-每日精选</p>
           </div>
           <div className="flex items-center gap-4 mb-3">
-            <h1 className="text-5xl text-white font-serif">今日推荐</h1>
+            <h1 className="text-5xl text-[var(--color-text-main)] font-serif">今日推荐</h1>
             {picks.personalized && (
               <span className="text-xs bg-[var(--color-accent-dim)] text-[var(--color-accent)] border border-[var(--color-accent)]/30 rounded-full px-3 py-1 flex items-center gap-1">
                 <Sparkles size={11} strokeWidth={1.5} />
@@ -103,7 +103,7 @@ export default function DailyPage() {
                       <span className="text-[10px] bg-[var(--color-accent)] text-[var(--color-bg-page)] px-2.5 py-0.5 rounded-full font-semibold">今日鸡尾酒</span>
                       <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full">{cocktail.cat}</span>
                     </div>
-                    <h2 className="text-2xl text-white font-serif mb-1">{cocktail.chn ? cocktail.chn.replace(/[（(][^）)]*[）)]/g, "").trim() : cocktail.eng}</h2>
+                    <h2 className="text-2xl text-[var(--color-text-main)] font-serif mb-1">{cocktail.chn ? cocktail.chn.replace(/[（(][^）)]*[）)]/g, "").trim() : cocktail.eng}</h2>
                     <p className="text-sm text-[var(--color-text-muted)] italic mb-4">{cocktail.eng}</p>
                     <p className="text-sm text-[var(--color-text-gray)] leading-relaxed">
                       {cocktail.ingredients ? cocktail.ingredients.slice(0, 3).join(" - ") : ""}
@@ -128,7 +128,7 @@ export default function DailyPage() {
               <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent-dim)] overflow-hidden mb-5">
                 <img src={spiritImg(spirit.slug || spirit.eng)} alt={spirit.name} className="w-full h-full object-cover" loading="lazy" />
               </div>
-              <h3 className="text-xl text-white font-serif mb-1">{spirit.name}</h3>
+              <h3 className="text-xl text-[var(--color-text-main)] font-serif mb-1">{spirit.name}</h3>
               <p className="text-xs text-[var(--color-text-muted)] italic mb-4">{spirit.eng}</p>
               <p className="text-sm text-[var(--color-text-gray)] leading-relaxed flex-1">{spirit.desc}</p>
               <Link to={`/spirits/${spirit.slug}`} className="inline-flex items-center gap-1 text-sm text-[var(--color-accent)] mt-4 group-hover:underline">
@@ -151,7 +151,7 @@ export default function DailyPage() {
                   <span className="text-[10px] bg-[var(--color-accent)] text-[var(--color-bg-page)] px-2.5 py-0.5 rounded-full font-semibold">今日文章 {i + 1}</span>
                   <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full">{article.cat}</span>
                 </div>
-                <h3 className="text-lg text-white font-serif leading-snug mb-3 group-hover:text-[var(--color-accent)] transition-colors">{article.title}</h3>
+                <h3 className="text-lg text-[var(--color-text-main)] font-serif leading-snug mb-3 group-hover:text-[var(--color-accent)] transition-colors">{article.title}</h3>
                 <p className="text-sm text-[var(--color-text-gray)] leading-relaxed mb-5">{article.summary}</p>
                 <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
                   <span className="flex items-center gap-1"><User size={12} strokeWidth={1.5} /> {article.author}</span>

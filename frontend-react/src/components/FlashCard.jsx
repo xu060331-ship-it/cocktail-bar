@@ -163,7 +163,7 @@ export default function FlashCard({ cards, masteredIds, onMaster, onReview, load
               {/* Content */}
               {!flipped ? (
                 <div className="flex flex-col justify-center" style={{ minHeight: 200 }}>
-                  <p className="text-lg text-white font-serif leading-relaxed mb-4">
+                  <p className="text-lg text-[var(--color-text-main)] font-serif leading-relaxed mb-4">
                     {card.question}
                   </p>
                   {card.hint && (
@@ -198,7 +198,7 @@ export default function FlashCard({ cards, masteredIds, onMaster, onReview, load
         <button
           onClick={goPrev}
           disabled={index === 0}
-          className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-2"
+          className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-2"
         >
           <ChevronLeft size={16} strokeWidth={1.5} />
           上一张
@@ -227,7 +227,7 @@ export default function FlashCard({ cards, masteredIds, onMaster, onReview, load
         <button
           onClick={goNext}
           disabled={index === cards.length - 1}
-          className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-2"
+          className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-2"
         >
           下一张
           <ChevronRight size={16} strokeWidth={1.5} />

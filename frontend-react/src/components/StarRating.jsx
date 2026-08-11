@@ -115,7 +115,7 @@ export default function StarRating({ cocktailEng }) {
           <div className="flex items-center gap-0.5">
             {renderStars(stats.avg)}
           </div>
-          <span className="text-lg text-white font-medium">{stats.avg}</span>
+          <span className="text-lg text-[var(--color-text-main)] font-medium">{stats.avg}</span>
           <span className="text-xs text-[var(--color-text-muted)]">
             ({stats.count} 条评分)
           </span>
@@ -143,7 +143,7 @@ export default function StarRating({ cocktailEng }) {
               onChange={(e) => setComment(e.target.value)}
               placeholder="写一句简短的品鉴感受..."
               maxLength={200}
-              className="flex-1 bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+              className="flex-1 bg-[var(--color-bg-page)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
             />
             <button
               onClick={handleSubmit}

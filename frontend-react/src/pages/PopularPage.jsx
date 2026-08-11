@@ -27,7 +27,7 @@ export default function PopularPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -35,7 +35,7 @@ export default function PopularPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-3">排行加载失败</p>
           <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
@@ -50,7 +50,7 @@ export default function PopularPage() {
   const currentList = tab === "views" ? cocktails : topRated
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -60,7 +60,7 @@ export default function PopularPage() {
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 flex items-center gap-2">
             <TrendingUp size={14} strokeWidth={1.5} /> RANKING
           </p>
-          <h1 className="text-4xl text-white font-serif mb-2">热门排行</h1>
+          <h1 className="text-4xl text-[var(--color-text-main)] font-serif mb-2">热门排行</h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             {tab === "views" ? "大家最常看的鸡尾酒，按浏览次数排序" : "酒友真实评分，高分好酒一览"}
           </p>
@@ -122,7 +122,7 @@ export default function PopularPage() {
 
                 {/* 信息 */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm text-white font-serif group-hover:text-[var(--color-accent)] transition-colors">
+                  <h3 className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">
                     {c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}
                   </h3>
                   <p className="text-xs text-[var(--color-text-muted)] italic">{c.eng}</p>

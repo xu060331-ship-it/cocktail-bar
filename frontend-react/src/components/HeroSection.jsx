@@ -37,7 +37,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-3xl sm:text-5xl md:text-7xl text-white font-bold leading-[1.1] mb-5 font-serif"
+          className="text-3xl sm:text-5xl md:text-7xl text-[var(--color-text-main)] font-bold leading-[1.1] mb-5 font-serif"
         >
           欢迎来到
           <br />

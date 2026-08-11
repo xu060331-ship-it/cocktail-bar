@@ -37,7 +37,7 @@ export default function WhiskyQA() {
           className="mb-8 md:mb-14"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3 font-serif">WHISKY 101</p>
-          <h2 className="text-3xl md:text-4xl text-white tracking-[0.08em] font-serif leading-tight">
+          <h2 className="text-3xl md:text-4xl text-[var(--color-text-main)] tracking-[0.08em] font-serif leading-tight">
             威士忌入门三问
           </h2>
         </motion.div>
@@ -64,7 +64,7 @@ export default function WhiskyQA() {
                   {item.id}
                 </span>
                 <h3 className={`text-sm md:text-lg font-serif leading-snug md:leading-relaxed transition-colors duration-300 ${
-                  active === i ? "text-white" : "text-[var(--color-text-gray)]"
+                  active === i ? "text-[var(--color-text-main)]" : "text-[var(--color-text-gray)]"
                 }`}>
                   {item.q}
                 </h3>

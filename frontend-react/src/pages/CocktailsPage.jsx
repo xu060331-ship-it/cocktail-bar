@@ -86,7 +86,7 @@ export default function CocktailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -94,7 +94,7 @@ export default function CocktailsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-3">数据加载失败</p>
           <p className="text-sm text-[var(--color-text-muted)] mb-6">{error}</p>
@@ -107,7 +107,7 @@ export default function CocktailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-5">
         {/* 标题 */}
         <motion.div
@@ -117,7 +117,7 @@ export default function CocktailsPage() {
           className="mb-10"
         >
           <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">126 COCKTAILS & COUNTING</p>
-          <h1 className="text-5xl text-white font-serif mb-3">酒谱</h1>
+          <h1 className="text-5xl text-[var(--color-text-main)] font-serif mb-3">酒谱</h1>
           <p className="text-[var(--color-text-gray)] text-lg">
             IBA 官方配方 + 全球酒吧经典，共 {allCocktails.length} 款鸡尾酒
           </p>
@@ -132,10 +132,10 @@ export default function CocktailsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜索酒名..."
-              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full pl-11 pr-4 py-2.5 text-sm text-white placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
+              className="w-full bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full pl-11 pr-4 py-2.5 text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] transition-colors"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-white">
+              <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]">
                 <X size={14} strokeWidth={1.5} />
               </button>
             )}
@@ -147,7 +147,7 @@ export default function CocktailsPage() {
                 key={cat}
                 onClick={() => setActiveCat(cat)}
                 className={`px-4 py-1.5 rounded-full text-xs transition-all duration-300 ${
-                  activeCat === cat ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white"
+                  activeCat === cat ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
                 }`}
               >
                 {cat}
@@ -161,7 +161,7 @@ export default function CocktailsPage() {
                 key={s}
                 onClick={() => setActiveSpirit(s)}
                 className={`px-4 py-1.5 rounded-full text-xs transition-all duration-300 ${
-                  activeSpirit === s ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white"
+                  activeSpirit === s ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
                 }`}
               >
                 {s}
@@ -175,7 +175,7 @@ export default function CocktailsPage() {
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">口感</span>
           <div className="flex gap-1 flex-wrap">
             {tasteFilters.map((t) => (
-              <button key={t} onClick={() => setActiveTaste(t)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeTaste === t ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+              <button key={t} onClick={() => setActiveTaste(t)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeTaste === t ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {t}
               </button>
             ))}
@@ -186,7 +186,7 @@ export default function CocktailsPage() {
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">难度</span>
           <div className="flex gap-1">
             {difficultyLabels.map((d) => (
-              <button key={d} onClick={() => setActiveDifficulty(d)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeDifficulty === d ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+              <button key={d} onClick={() => setActiveDifficulty(d)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeDifficulty === d ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {d}
               </button>
             ))}
@@ -197,7 +197,7 @@ export default function CocktailsPage() {
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">场景</span>
           <div className="flex gap-1 flex-wrap">
             {occasionFilters.map((o) => (
-              <button key={o} onClick={() => setActiveOccasion(o)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeOccasion === o ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-white bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
+              <button key={o} onClick={() => setActiveOccasion(o)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeOccasion === o ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {o}
               </button>
             ))}
@@ -233,12 +233,12 @@ export default function CocktailsPage() {
                     {(madeSet.has(c.eng) || tastedSet.has(c.eng)) && (
                       <div className="absolute top-2 right-2 flex gap-1">
                         {madeSet.has(c.eng) && (
-                          <span className="text-[9px] bg-emerald-500/90 text-white px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+                          <span className="text-[9px] bg-emerald-500/90 text-[var(--color-text-main)] px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
                             <GlassWater size={9} strokeWidth={2} /> 调配过
                           </span>
                         )}
                         {tastedSet.has(c.eng) && (
-                          <span className="text-[9px] bg-amber-500/90 text-white px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
+                          <span className="text-[9px] bg-amber-500/90 text-[var(--color-text-main)] px-1.5 py-0.5 rounded-md flex items-center gap-0.5 backdrop-blur-sm">
                             <Coffee size={9} strokeWidth={2} /> 喝过
                           </span>
                         )}
@@ -248,7 +248,7 @@ export default function CocktailsPage() {
 
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="text-lg text-white font-serif leading-tight">{c.chnClean}</h3>
+                      <h3 className="text-lg text-[var(--color-text-main)] font-serif leading-tight">{c.chnClean}</h3>
                       <p className="text-xs text-[var(--color-text-muted)] italic mt-0.5">{c.eng}</p>
                     </div>
                     <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2 py-0.5 rounded-full shrink-0 ml-2">{c.cat}</span>

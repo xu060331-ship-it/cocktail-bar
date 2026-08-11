@@ -21,7 +21,7 @@ function ExpandableCard({ item }) {
       } ${hasBody ? "cursor-pointer" : ""}`}
     >
       <div className="flex items-start justify-between gap-4">
-        <h3 className="text-base text-white font-serif leading-snug flex-1">{item.label}</h3>
+        <h3 className="text-base text-[var(--color-text-main)] font-serif leading-snug flex-1">{item.label}</h3>
         {hasBody && (
           <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.3 }} className="shrink-0 mt-1">
             <ChevronDown size={16} strokeWidth={1.5} className="text-[var(--color-accent)]" />
@@ -58,7 +58,7 @@ export default function SpiritDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAPI(`/api/spirits/${name}`)
+    fetchAPI(`/api/spirits/${name}`)
       .then((d) => {
         setData(d)
         setLoading(false)
@@ -68,7 +68,7 @@ export default function SpiritDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <p className="text-2xl text-[var(--color-text-muted)] animate-pulse">加载中...</p>
       </div>
     )
@@ -76,7 +76,7 @@ export default function SpiritDetailPage() {
 
   if (!data || data.error) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-4">该基酒详情页尚未完成</p>
           <Link to="/spirits" className="text-[var(--color-accent)] hover:underline">返回基酒百科</Link>
@@ -89,7 +89,7 @@ export default function SpiritDetailPage() {
   const sections = details ? details.sections : []
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-white font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-5">
         <Link to="/spirits" className="inline-flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors mb-12">
           <ArrowLeft size={16} strokeWidth={1.5} />
@@ -105,7 +105,7 @@ export default function SpiritDetailPage() {
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl">{data.emoji}</span>
             <div>
-              <h1 className="text-5xl text-white font-serif">{data.name}</h1>
+              <h1 className="text-5xl text-[var(--color-text-main)] font-serif">{data.name}</h1>
               <p className="text-lg text-[var(--color-text-muted)] italic">{data.eng}</p>
             </div>
           </div>
