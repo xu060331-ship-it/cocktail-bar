@@ -52,14 +52,27 @@ export default function Footer() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex items-center justify-between pt-8 border-t border-[var(--color-border)]"
+          className="pt-8 border-t border-[var(--color-border)]"
         >
-          <p className="text-xs text-[var(--color-text-muted)]">
-            2026 调酒百科 · Cocktail Bar
-          </p>
-          <p className="text-xs text-[var(--color-text-muted)]">
-            内容贡献自全球调酒师社区
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-[var(--color-text-muted)]">
+              2026 调酒百科 · Cocktail Bar
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              内容贡献自全球调酒师社区
+            </p>
+          </div>
+          {/* ICP 备案号 */}
+          <div className="text-center mt-4">
+            <a
+              href="https://beian.miit.gov.cn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors"
+            >
+              辽ICP备2026018332号-1
+            </a>
+          </div>
         </motion.div>
       </div>
     </footer>
