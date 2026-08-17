@@ -62,8 +62,8 @@ export default function Footer() {
               内容贡献自全球调酒师社区
             </p>
           </div>
-          {/* ICP 备案号 */}
-          <div className="text-center mt-4">
+          {/* 备案号 */}
+          <div className="text-center mt-4 flex items-center justify-center gap-4 flex-wrap">
             <a
               href="https://beian.miit.gov.cn"
               target="_blank"
@@ -71,6 +71,14 @@ export default function Footer() {
               className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors"
             >
               辽ICP备2026018332号-1
+            </a>
+            <a
+              href="http://www.beian.gov.cn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors"
+            >
+              辽公网安备21021102001938号
             </a>
           </div>
         </motion.div>
