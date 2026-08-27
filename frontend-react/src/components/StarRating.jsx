@@ -14,6 +14,7 @@ export default function StarRating({ cocktailEng }) {
   const [comment, setComment] = useState("")
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [feedback, setFeedback] = useState("")
 
   const loadRatings = () => {
     const token = localStorage.getItem("token")
@@ -48,10 +49,13 @@ export default function StarRating({ cocktailEng }) {
       })
       setStats(res.stats)
       setMyRating({ rating: selectedStar, comment: comment.trim() })
+      setFeedback("评分已保存")
+      setTimeout(() => setFeedback(""), 2200)
       // Reload reviews to show the new one
       loadRatings()
     } catch (err) {
       console.error("评分失败:", err.message)
+      setFeedback("评分失败，请稍后重试")
     } finally {
       setSaving(false)
     }
@@ -68,9 +72,12 @@ export default function StarRating({ cocktailEng }) {
       setMyRating(null)
       setSelectedStar(0)
       setComment("")
+      setFeedback("评分已删除")
+      setTimeout(() => setFeedback(""), 2200)
       loadRatings()
     } catch (err) {
       console.error("删除失败:", err.message)
+      setFeedback("删除失败，请稍后重试")
     } finally {
       setSaving(false)
     }
@@ -105,7 +112,7 @@ export default function StarRating({ cocktailEng }) {
     })
   }
 
-  if (loading) return null
+  if (loading) return <div className="border-t border-[var(--color-border)] pt-6 mt-6 animate-pulse"><div className="h-5 w-32 rounded bg-[var(--color-bg-card)] mb-4" /><div className="h-20 rounded-xl bg-[var(--color-bg-card)]" /></div>
 
   return (
     <div className="border-t border-[var(--color-border)] pt-6 mt-6">
@@ -121,6 +128,7 @@ export default function StarRating({ cocktailEng }) {
           </span>
         </div>
       </div>
+      {feedback && <p className={`mb-4 text-xs ${feedback.includes("失败") ? "text-red-400" : "text-emerald-400"}`}>{feedback}</p>}
 
       {/* My rating */}
       {user ? (

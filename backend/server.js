@@ -7,9 +7,10 @@ const { AI_ENABLED, XIAOJIU_SYSTEM_PROMPT, callAIWithRetry, callAIStream, extrac
 const { getPersona, listPersonas } = require("./ai-personas")
 const { STATIC_CARDS, generateCocktailCards } = require("./flashcards")
 const { listCategories, getCategory, searchEntries } = require("./encyclopedia")
+const { jwtSecret, port, frontendUrl } = require("./config")
 const app = express()
 
-app.use(cors())
+app.use(cors(frontendUrl ? { origin: frontendUrl } : undefined))
 app.use(express.json())
 
 const connStr = process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar"
@@ -182,7 +183,7 @@ app.get("/api/daily", async (req, res) => {
       try {
         const token = authHeader.replace("Bearer ", "")
         const jwt = require("jsonwebtoken")
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "cocktail_bar_secret_2024")
+        const decoded = jwt.verify(token, jwtSecret)
         const mem = await db.query(
           "SELECT preferred_tastes, preferred_occasions FROM user_ai_memory WHERE user_id = $1",
           [decoded.id]
@@ -920,7 +921,7 @@ app.post("/api/ai/chat", async (req, res) => {
       try {
         const token = authHeader.replace("Bearer ", "")
         const jwt = require("jsonwebtoken")
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "cocktail_bar_secret_2024")
+        const decoded = jwt.verify(token, jwtSecret)
         const mem = await db.query(
           "SELECT preferred_tastes, preferred_occasions, mood_history, interaction_count, last_mood, last_interaction_at FROM user_ai_memory WHERE user_id = $1",
           [decoded.id]
@@ -1000,7 +1001,7 @@ app.post("/api/ai/chat/stream", async (req, res) => {
       try {
         const token = authHeader.replace("Bearer ", "")
         const jwt = require("jsonwebtoken")
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "cocktail_bar_secret_2024")
+        const decoded = jwt.verify(token, jwtSecret)
         const mem = await db.query(
           "SELECT preferred_tastes, preferred_occasions, mood_history, interaction_count, last_mood, last_interaction_at FROM user_ai_memory WHERE user_id = $1",
           [decoded.id]
@@ -1152,8 +1153,7 @@ app.get("/api/ratings/:eng", async (req, res) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         const jwt = require("jsonwebtoken")
-        const JWT_SECRET = process.env.JWT_SECRET || "cocktail-bar-secret-key-change-in-production"
-        const decoded = jwt.verify(authHeader.replace("Bearer ", ""), JWT_SECRET)
+        const decoded = jwt.verify(authHeader.replace("Bearer ", ""), jwtSecret)
         if (decoded?.id) {
           const my = await db.query(
             "SELECT id, rating, comment FROM cocktail_ratings WHERE cocktail_eng = $1 AND user_id = $2",
@@ -1479,8 +1479,7 @@ app.get("/api/flashcards", async (req, res) => {
     if (authHeader && authHeader.startsWith("Bearer ")) {
       try {
         const jwt = require("jsonwebtoken")
-        const JWT_SECRET = process.env.JWT_SECRET || "cocktail-bar-secret-key-change-in-production"
-        const decoded = jwt.verify(authHeader.replace("Bearer ", ""), JWT_SECRET)
+        const decoded = jwt.verify(authHeader.replace("Bearer ", ""), jwtSecret)
         if (decoded?.id) {
           const progress = await db.query(
             "SELECT card_id FROM flashcard_progress WHERE user_id = $1 AND mastered = TRUE",
@@ -1545,6 +1544,6 @@ app.post("/api/flashcards/progress", authMiddleware, async (req, res) => {
 
 mountAuthRoutes(app, db)
 
-app.listen(3000, () => {
-  console.log("后端运行在 http://localhost:3000")
+app.listen(port, () => {
+  console.log(`后端运行在端口 ${port}`)
 })

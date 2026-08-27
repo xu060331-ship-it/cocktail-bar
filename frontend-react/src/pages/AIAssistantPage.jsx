@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { fetchAPI } from "../lib/api"
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+import { fetchAPI, API_URL } from "../lib/api"
 import { useAuth } from "../lib/auth"
 import { cocktailHeroImg } from "../lib/images"
 import PersonaSwitcher from "../components/PersonaSwitcher"
@@ -144,7 +142,13 @@ export default function AIAssistantPage() {
     try {
       const res = await fetch(`${API_URL}/api/ai/chat/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(() => {
+            const token = localStorage.getItem("token")
+            return token ? { Authorization: `Bearer ${token}` } : {}
+          })(),
+        },
         body: JSON.stringify({ messages: allMessages, personaId }),
       })
 

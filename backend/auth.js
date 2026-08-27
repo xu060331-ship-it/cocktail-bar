@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const { jwtSecret } = require("./config")
 
-const JWT_SECRET = process.env.JWT_SECRET || "cocktail-bar-secret-key-change-in-production"
 const JWT_EXPIRES = "7d"
 
 // ====== 认证中间件 ======
@@ -13,7 +13,7 @@ function authMiddleware(req, res, next) {
 
   try {
     const token = header.split(" ")[1]
-    const decoded = jwt.verify(token, JWT_SECRET)
+    const decoded = jwt.verify(token, jwtSecret)
     req.user = decoded  // { id, email, nickname }
     next()
   } catch (err) {
@@ -58,7 +58,7 @@ function mountAuthRoutes(app, db) {
       // 签发 JWT
       const token = jwt.sign(
         { id: user.id, email: user.email, nickname: user.nickname },
-        JWT_SECRET,
+        jwtSecret,
         { expiresIn: JWT_EXPIRES }
       )
 
@@ -97,7 +97,7 @@ function mountAuthRoutes(app, db) {
       // 签发 JWT
       const token = jwt.sign(
         { id: user.id, email: user.email, nickname: user.nickname },
-        JWT_SECRET,
+        jwtSecret,
         { expiresIn: JWT_EXPIRES }
       )
 

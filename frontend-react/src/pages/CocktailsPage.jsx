@@ -50,7 +50,21 @@ export default function CocktailsPage() {
   const [activeDifficulty, setActiveDifficulty] = useState("全部")
   const [activeOccasion, setActiveOccasion] = useState("全部")
   const [search, setSearch] = useState("")
+  const [sort, setSort] = useState(() => localStorage.getItem("cocktailSort") || "default")
   const { madeSet, tastedSet } = useExperience()
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cocktailFilters") || "{}")
+      setActiveCat(saved.activeCat || "全部"); setActiveSpirit(saved.activeSpirit || "全部"); setActiveTaste(saved.activeTaste || "全部")
+      setActiveDifficulty(saved.activeDifficulty || "全部"); setActiveOccasion(saved.activeOccasion || "全部"); setSearch(saved.search || "")
+    } catch (_) {}
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("cocktailFilters", JSON.stringify({ activeCat, activeSpirit, activeTaste, activeDifficulty, activeOccasion, search }))
+    localStorage.setItem("cocktailSort", sort)
+  }, [activeCat, activeSpirit, activeTaste, activeDifficulty, activeOccasion, search, sort])
 
   // 页面加载时从后端拿数据
   useEffect(() => {
@@ -67,7 +81,7 @@ export default function CocktailsPage() {
   }, [])
 
   const filtered = useMemo(() => {
-    return allCocktails.filter((c) => {
+    const result = allCocktails.filter((c) => {
       if (activeCat !== "全部" && c.cat !== activeCat) return false
       if (activeSpirit !== "全部" && c.spirit !== activeSpirit) return false
       if (activeTaste !== "全部" && (!c.taste_tags || !c.taste_tags.includes(activeTaste))) return false
@@ -82,7 +96,8 @@ export default function CocktailsPage() {
       }
       return true
     })
-  }, [allCocktails, activeCat, activeSpirit, activeTaste, activeDifficulty, activeOccasion, search])
+    return [...result].sort((a, b) => sort === "popular" ? (b.view_count || 0) - (a.view_count || 0) : sort === "difficulty" ? (a.difficulty || 0) - (b.difficulty || 0) : a.id - b.id)
+  }, [allCocktails, activeCat, activeSpirit, activeTaste, activeDifficulty, activeOccasion, search, sort])
 
   if (loading) {
     return (
@@ -205,6 +220,12 @@ export default function CocktailsPage() {
         </div>
 
         <p className="text-xs text-[var(--color-text-muted)] mb-6">共 {filtered.length} 款</p>
+        <div className="mb-6 flex items-center justify-end gap-2 text-xs text-[var(--color-text-muted)]">
+          <label htmlFor="cocktail-sort">排序</label>
+          <select id="cocktail-sort" value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-[var(--color-text-gray)] outline-none">
+            <option value="default">默认</option><option value="popular">最热门</option><option value="difficulty">最易上手</option>
+          </select>
+        </div>
 
         {/* 卡片网格 */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

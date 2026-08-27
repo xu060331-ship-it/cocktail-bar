@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom"
+import { useEffect } from "react"
 import { AuthProvider } from "./lib/auth"
 import Navbar from "./components/Navbar"
 import HomePage from "./pages/HomePage"
@@ -21,16 +22,22 @@ import LearnPage from "./pages/LearnPage"
 import EncyclopediaPage from "./pages/EncyclopediaPage"
 import TasteTestPage from "./pages/TasteTestPage"
 import GettingStartedPage from "./pages/GettingStartedPage"
+import MobileBottomNav from "./components/MobileBottomNav"
 
 function Layout() {
   const location = useLocation()
   const isHome = location.pathname === "/"
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" })
+  }, [location.pathname, location.search])
 
   return (
     <div className="bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif min-h-screen">
       <Navbar transparent={isHome} />
       <Outlet />
       <RandomPicker />
+      <MobileBottomNav />
     </div>
   )
 }
@@ -52,6 +59,7 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:section" element={<ProfilePage />} />
           <Route path="/playlist/:id" element={<PlaylistDetailPage />} />
           <Route path="/popular" element={<PopularPage />} />
           <Route path="/ai-assistant" element={<AIAssistantPage />} />

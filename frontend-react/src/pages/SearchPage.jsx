@@ -22,12 +22,18 @@ export default function SearchPage() {
   const [parsed, setParsed] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [history, setHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("searchHistory") || "[]") } catch { return [] }
+  })
 
   const doSearch = (q) => {
     if (!q.trim()) return
     setLoading(true)
     setError(null)
     setQuery(q)
+    const nextHistory = [q.trim(), ...history.filter((item) => item !== q.trim())].slice(0, 6)
+    setHistory(nextHistory)
+    localStorage.setItem("searchHistory", JSON.stringify(nextHistory))
     fetchAPI(`/api/search?q=${encodeURIComponent(q)}`)
       .then((data) => {
         setResults(data.results)
@@ -118,6 +124,8 @@ export default function SearchPage() {
           {/* 搜索提示 */}
           {!results && !error && (
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
+              {history.length > 0 && <div className="w-full text-left text-xs text-[var(--color-text-muted)] mb-1">最近搜索</div>}
+              {history.map((item) => <button key={item} onClick={() => doSearch(item)} className="text-xs text-[var(--color-text-gray)] bg-[var(--color-accent-dim)] border border-[var(--color-border)] rounded-full px-4 py-2 hover:border-[var(--color-accent)]">{item}</button>)}
               {hints.map((hint) => (
                 <button
                   key={hint}

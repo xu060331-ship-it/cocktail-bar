@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { useAuth } from "../lib/auth"
 import { fetchAPI } from "../lib/api"
 import { cocktailImg } from "../lib/images"
@@ -20,11 +20,14 @@ const COMMON_TOOLS = [
 ]
 
 export default function ProfilePage() {
+  const { section } = useParams()
   const { user, logout } = useAuth()
   const token = localStorage.getItem("token")
   const auth = (method, body) => ({ method, headers: { Authorization: `Bearer ${token}` }, body })
 
-  const [activeTab, setActiveTab] = useState("favorites")
+  const validSections = ["favorites", "history", "bar", "playlists", "notes"]
+  const initialTab = validSections.includes(section) ? section : "favorites"
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -47,6 +50,10 @@ export default function ProfilePage() {
   const [newPlDesc, setNewPlDesc] = useState("")
   const [creatingPl, setCreatingPl] = useState(false)
   const { madeSet, tastedSet, count: expCount } = useExperience()
+
+  useEffect(() => {
+    if (validSections.includes(section)) setActiveTab(section)
+  }, [section])
 
   useEffect(() => {
     if (!user) { setLoading(false); return }

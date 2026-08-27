@@ -26,6 +26,7 @@ export default function CocktailDetailPage() {
   const [note, setNote] = useState("")
   const [noteSaved, setNoteSaved] = useState(false)
   const [noteLoading, setNoteLoading] = useState(false)
+  const [favoriteFeedback, setFavoriteFeedback] = useState("")
 
   // 获取用户酒单
   useEffect(() => {
@@ -127,17 +128,21 @@ export default function CocktailDetailPage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         setFavorited(false)
+        setFavoriteFeedback("已取消收藏")
       } else {
         await fetchAPI(`/api/favorites/${encodeURIComponent(name)}`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         })
         setFavorited(true)
+        setFavoriteFeedback("已加入收藏")
       }
     } catch (err) {
       console.error("收藏操作失败:", err)
+      setFavoriteFeedback("操作失败，请稍后重试")
     } finally {
       setFavLoading(false)
+      setTimeout(() => setFavoriteFeedback(""), 2200)
     }
   }
 
@@ -218,6 +223,7 @@ export default function CocktailDetailPage() {
                 {favorited ? "已收藏" : "收藏"}
               </button>
             )}
+            {favoriteFeedback && <span className={`text-xs ${favoriteFeedback.includes("失败") ? "text-red-400" : "text-emerald-400"}`}>{favoriteFeedback}</span>}
             {user && (
               <>
                 <button

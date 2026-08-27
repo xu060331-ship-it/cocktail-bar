@@ -1,21 +1,47 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { GlassWater, Menu, X, LogOut, User, TrendingUp } from "lucide-react"
+import { GlassWater, Menu, X, LogOut, User, TrendingUp, ChevronDown } from "lucide-react"
 import { useAuth } from "../lib/auth"
 import AuthModal from "./AuthModal"
 import ThemeToggle from "./ThemeToggle"
 
-const navLinks = [
-  { to: "/getting-started", label: "新手入门" },
-  { to: "/daily", label: "每日推荐" },
-  { to: "/taste-test", label: "口味测试" },
-  { to: "/cocktails", label: "酒谱" },
-  { to: "/spirits", label: "基酒" },
-  { to: "/articles", label: "关于酒" },
-  { to: "/ai-assistant", label: "AI调酒助手" },
-  { to: "/encyclopedia", label: "调酒百科" },
-  { to: "/learn", label: "学习卡片" },
-  { to: "/search", label: "智能搜酒" },
+const navGroups = [
+  {
+    label: "探索",
+    links: [
+      { to: "/cocktails", label: "酒谱" },
+      { to: "/spirits", label: "基酒" },
+      { to: "/daily", label: "每日推荐" },
+      { to: "/popular", label: "热门排行" },
+    ],
+  },
+  {
+    label: "学习",
+    links: [
+      { to: "/getting-started", label: "新手入门" },
+      { to: "/learn", label: "学习卡片" },
+      { to: "/encyclopedia", label: "调酒百科" },
+      { to: "/articles", label: "关于酒" },
+    ],
+  },
+  {
+    label: "工具",
+    links: [
+      { to: "/ai-assistant", label: "AI调酒助手" },
+      { to: "/taste-test", label: "口味测试" },
+      { to: "/search", label: "智能搜酒" },
+    ],
+  },
+  {
+    label: "我的",
+    links: [
+      { to: "/profile", label: "个人主页" },
+      { to: "/profile/favorites", label: "我的收藏" },
+      { to: "/profile/bar", label: "我的酒柜" },
+      { to: "/profile/playlists", label: "我的酒单" },
+      { to: "/profile/notes", label: "我的笔记" },
+    ],
+  },
 ]
 
 export default function Navbar({ transparent = false }) {
@@ -26,6 +52,15 @@ export default function Navbar({ transparent = false }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState("login")
+
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false)
+    }
+    document.addEventListener("keydown", closeOnEscape)
+    return () => document.removeEventListener("keydown", closeOnEscape)
+  }, [menuOpen])
 
   const handleNavSearch = (e) => {
     if (e.key === "Enter" && navSearch.trim()) {
@@ -38,6 +73,10 @@ export default function Navbar({ transparent = false }) {
   const handleNavClick = () => {
     setMenuOpen(false)
   }
+
+  const isPathActive = (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  const isGroupActive = (group) => group.links.some((link) => isPathActive(link.to))
+  const visibleNavGroups = navGroups.filter((group) => group.label !== "我的" || user)
 
   // 桌面端右侧按钮（复用）
   const AuthButtons = ({ mobile = false }) => {
@@ -107,23 +146,25 @@ export default function Navbar({ transparent = false }) {
           </Link>
 
           {/* 桌面端：导航链接 */}
-          <nav className="hidden md:flex items-center gap-7">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.to
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`text-sm transition-colors whitespace-nowrap ${
-                    isActive
-                      ? "text-[var(--color-accent)]"
-                      : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
-                  }`}
+          <nav className="hidden md:flex items-center gap-2">
+            {visibleNavGroups.map((group) => (
+              <div key={group.label} className="group relative">
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  className={`flex items-center gap-1 px-3 py-2 text-sm transition-colors ${isGroupActive(group) ? "text-[var(--color-accent)]" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"}`}
                 >
-                  {link.label}
-                </Link>
-              )
-            })}
+                  {group.label}<ChevronDown size={13} strokeWidth={1.5} />
+                </button>
+                <div className="invisible absolute left-0 top-full z-10 w-40 translate-y-1 border border-[var(--color-border)] bg-[var(--color-bg-nav)] p-2 opacity-0 shadow-xl transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  {group.links.map((link) => (
+                    <Link key={link.to} to={link.to} className={`block px-3 py-2.5 text-sm transition-colors ${isPathActive(link.to) ? "text-[var(--color-accent)]" : "text-[var(--color-text-gray)] hover:bg-[var(--color-accent-dim)] hover:text-[var(--color-text-main)]"}`}>
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </nav>
         </div>
 
@@ -143,6 +184,9 @@ export default function Navbar({ transparent = false }) {
 
         {/* 手机端：汉堡按钮 */}
         <button
+          type="button"
+          aria-label={menuOpen ? "关闭导航菜单" : "打开导航菜单"}
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] transition-colors p-2"
         >
@@ -153,23 +197,18 @@ export default function Navbar({ transparent = false }) {
         {menuOpen && (
           <div className="absolute top-16 left-0 right-0 bg-[var(--color-bg-nav)] border-b border-[var(--color-border)] md:hidden">
             <nav className="flex flex-col py-4 px-6 gap-3">
-              {navLinks.map((link) => {
-                const isActive = location.pathname === link.to
-                return (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={handleNavClick}
-                    className={`text-base py-1 transition-colors ${
-                      isActive
-                        ? "text-[var(--color-accent)]"
-                        : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                )
-              })}
+              {visibleNavGroups.map((group) => (
+                <div key={group.label} className="border-b border-[var(--color-border)] pb-3 last:border-0">
+                  <p className={`mb-2 text-[10px] tracking-[0.2em] ${isGroupActive(group) ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}`}>{group.label}</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {group.links.map((link) => (
+                      <Link key={link.to} to={link.to} onClick={handleNavClick} className={`py-1 text-base transition-colors ${isPathActive(link.to) ? "text-[var(--color-accent)]" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)]"}`}>
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </nav>
             <div className="flex items-center gap-3 px-6 pb-5">
               <input
