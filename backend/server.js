@@ -25,6 +25,7 @@ const upload = multer({
 const contentImageDir = path.join(__dirname, "uploads", "content")
 fs.mkdirSync(contentImageDir, { recursive: true })
 const contentImageUpload = multer({ storage: multer.diskStorage({ destination: contentImageDir, filename: (_, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname).toLowerCase()}`) }), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_, file, cb) => cb(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) })
+function validImageSignature(filePath) { const data = fs.readFileSync(filePath); return (data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) || (data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) || (data.toString("ascii", 0, 4) === "RIFF" && data.toString("ascii", 8, 12) === "WEBP") }
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 app.use(cors(frontendUrl ? { origin: frontendUrl } : undefined))
@@ -34,6 +35,7 @@ const CONTENT_STATUSES = new Set(["draft", "review", "published", "archived"])
 
 app.get("/api/admin/overview", adminMiddleware, async (_, res) => {
   try {
+    if (!validImageSignature(req.file.path)) { fs.unlink(req.file.path, () => {}); return res.status(400).json({ error: "图片文件内容无效" }) }
     const [cocktails, articles, popular, ai] = await Promise.all([
       db.query("SELECT id, eng, chn, cat, tip AS description, tip, image_url, COALESCE(review_status, 'published') AS review_status FROM cocktails ORDER BY id"),
       db.query("SELECT id, title, cat, summary AS description, body, image_url, COALESCE(review_status, 'published') AS review_status FROM articles ORDER BY id DESC"),
@@ -82,6 +84,9 @@ app.post("/api/submissions", authMiddleware, async (req, res) => {
 app.get("/api/submissions/mine", authMiddleware, async (req, res) => {
   try { const result = await db.query("SELECT id, content_type, title, summary, status, reviewer_note, created_at, reviewed_at FROM content_submissions WHERE user_id=$1 ORDER BY created_at DESC", [req.user.id]); res.json(result.rows) }
   catch (_) { res.status(500).json({ error: "读取投稿记录失败" }) }
+})
+app.delete("/api/submissions/:id", authMiddleware, async (req, res) => {
+  try { const result = await db.query("DELETE FROM content_submissions WHERE id=$1 AND user_id=$2 AND status='pending' RETURNING id", [req.params.id, req.user.id]); if (!result.rows.length) return res.status(400).json({ error: "只有审核中的投稿可以删除" }); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "删除投稿失败" }) }
 })
 
 app.get("/api/notifications", authMiddleware, async (req, res) => {
@@ -147,6 +152,9 @@ app.patch("/api/admin/content-submissions/:id", adminMiddleware, async (req, res
     await db.query("INSERT INTO notifications (user_id,type,title,body) VALUES ($1,$2,$3,$4)", [item.user_id, "submission_review", status === "approved" ? "投稿已通过" : "投稿未通过", status === "approved" ? `你的${item.content_type === "article" ? "文章" : item.content_type === "flashcard" ? "学习卡片" : "百科词条"}《${item.title}》已通过审核。` : `你的投稿《${item.title}》未通过审核。${reviewer_note ? `原因：${reviewer_note}` : "请修改后重新提交。"}`])
     res.json(result.rows[0])
   } catch (_) { res.status(500).json({ error: "审核投稿失败" }) }
+})
+app.delete("/api/admin/content-submissions/:id", adminMiddleware, async (req, res) => {
+  try { const result = await db.query("DELETE FROM content_submissions WHERE id=$1 RETURNING id", [req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "投稿不存在" }); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "删除投稿失败" }) }
 })
 
 app.get("/api/admin/submissions", adminMiddleware, async (_, res) => {
@@ -1266,15 +1274,19 @@ app.post("/api/making-logs", authMiddleware, async (req, res) => {
 app.post("/api/making-logs/:id/photo", authMiddleware, upload.single("photo"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "请选择 JPG、PNG 或 WebP 图片" })
+    if (!validImageSignature(req.file.path)) { fs.unlink(req.file.path, () => {}); return res.status(400).json({ error: "图片文件内容无效" }) }
+    const previous = await db.query("SELECT photo_url FROM cocktail_making_logs WHERE id=$1 AND user_id=$2", [req.params.id, req.user.id])
     const result = await db.query("UPDATE cocktail_making_logs SET photo_url=$1, updated_at=NOW() WHERE id=$2 AND user_id=$3 RETURNING photo_url", [`/uploads/making-logs/${req.file.filename}`, req.params.id, req.user.id])
     if (!result.rows.length) { fs.unlinkSync(req.file.path); return res.status(404).json({ error: "记录不存在" }) }
+    if (previous.rows[0]?.photo_url) { const old = path.join(__dirname, previous.rows[0].photo_url.replace(/^\/uploads\//, "uploads/")); if (old !== req.file.path) fs.unlink(old, () => {}) }
     res.json(result.rows[0])
   } catch (_) { if (req.file) fs.unlink(req.file.path, () => {}); res.status(500).json({ error: "上传照片失败" }) }
 })
 app.delete("/api/making-logs/:id", authMiddleware, async (req, res) => {
   try {
-    const result = await db.query("DELETE FROM cocktail_making_logs WHERE id = $1 AND user_id = $2 RETURNING id", [req.params.id, req.user.id])
+    const result = await db.query("DELETE FROM cocktail_making_logs WHERE id = $1 AND user_id = $2 RETURNING id, photo_url", [req.params.id, req.user.id])
     if (!result.rows.length) return res.status(404).json({ error: "记录不存在" })
+    if (result.rows[0].photo_url) fs.unlink(path.join(__dirname, result.rows[0].photo_url.replace(/^\/uploads\//, "uploads/")), () => {})
     res.json({ ok: true })
   } catch (_) { res.status(500).json({ error: "删除调酒记录失败" }) }
 })

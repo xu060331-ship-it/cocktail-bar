@@ -31,6 +31,7 @@ import AdminImagesPage from "./pages/AdminImagesPage"
 import MySubmissionsPage from "./pages/MySubmissionsPage"
 import AdminReportsPage from "./pages/AdminReportsPage"
 import NotificationsPage from "./pages/NotificationsPage"
+import AdminDashboardPage from "./pages/AdminDashboardPage"
 
 function Layout() {
   const { loading: authLoading } = useAuth()
@@ -82,13 +83,15 @@ export default function App() {
           <Route path="/encyclopedia" element={<EncyclopediaPage />} />
           <Route path="/taste-test" element={<TasteTestPage />} />
           <Route path="/getting-started" element={<GettingStartedPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/content" element={<AdminPage />} />
           <Route path="/submit" element={<SubmitContentPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/admin/images" element={<AdminImagesPage />} />
           <Route path="/submissions" element={<MySubmissionsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
