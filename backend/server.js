@@ -35,7 +35,6 @@ const CONTENT_STATUSES = new Set(["draft", "review", "published", "archived"])
 
 app.get("/api/admin/overview", adminMiddleware, async (_, res) => {
   try {
-    if (!validImageSignature(req.file.path)) { fs.unlink(req.file.path, () => {}); return res.status(400).json({ error: "图片文件内容无效" }) }
     const [cocktails, articles, popular, ai] = await Promise.all([
       db.query("SELECT id, eng, chn, cat, tip AS description, tip, image_url, COALESCE(review_status, 'published') AS review_status FROM cocktails ORDER BY id"),
       db.query("SELECT id, title, cat, summary AS description, body, image_url, COALESCE(review_status, 'published') AS review_status FROM articles ORDER BY id DESC"),
