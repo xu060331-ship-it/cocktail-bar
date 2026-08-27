@@ -139,7 +139,7 @@ export default function ProfilePage() {
   const currentData = activeTab === "favorites" ? favorites : activeTab === "history" ? history : []
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-28">
       <div className="max-w-4xl mx-auto px-5">
         {/* 用户信息 */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
@@ -155,7 +155,7 @@ export default function ProfilePage() {
           </div>
 
           {/* 统计卡片 */}
-          <div className="grid grid-cols-3 sm:grid-cols-7 gap-3 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-3">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => { setActiveTab(t.key); setMatchResult(null) }}
                 className={`bg-[var(--color-bg-card)] border rounded-2xl p-4 transition-all text-left ${activeTab === t.key ? "border-[var(--color-accent)]" : "border-[var(--color-border)] hover:border-[var(--color-text-muted)]"}`}>

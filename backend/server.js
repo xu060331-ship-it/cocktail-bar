@@ -2,6 +2,9 @@ require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
 const { Client } = require("pg")
+const multer = require("multer")
+const fs = require("fs")
+const path = require("path")
 const { mountAuthRoutes, authMiddleware } = require("./auth")
 const { AI_ENABLED, XIAOJIU_SYSTEM_PROMPT, callAIWithRetry, callAIStream, extractJSON, validateCitations, ruleBasedRecommend, fallbackChatReply, generateCocktailEnhancementPrompt, generateRecommendationPrompt } = require("./ai")
 const { getPersona, listPersonas } = require("./ai-personas")
@@ -9,6 +12,14 @@ const { STATIC_CARDS, generateCocktailCards } = require("./flashcards")
 const { listCategories, getCategory, searchEntries } = require("./encyclopedia")
 const { jwtSecret, port, frontendUrl } = require("./config")
 const app = express()
+const uploadDir = path.join(__dirname, "uploads", "making-logs")
+fs.mkdirSync(uploadDir, { recursive: true })
+const upload = multer({
+  storage: multer.diskStorage({ destination: uploadDir, filename: (_, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname).toLowerCase()}`) }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => cb(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)),
+})
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 app.use(cors(frontendUrl ? { origin: frontendUrl } : undefined))
 app.use(express.json())
@@ -1057,6 +1068,39 @@ app.post("/api/ai/chat/stream", async (req, res) => {
       res.end()
     }
   }
+})
+
+// ====== 详细调酒记录 API ======
+app.get("/api/making-logs", authMiddleware, async (req, res) => {
+  try { const result = await db.query(`SELECT l.*, c.chn FROM cocktail_making_logs l LEFT JOIN cocktails c ON c.eng = l.cocktail_eng WHERE l.user_id = $1 ORDER BY l.made_at DESC, l.created_at DESC`, [req.user.id]); res.json(result.rows) }
+  catch (_) { res.status(500).json({ error: "读取调酒记录失败" }) }
+})
+app.post("/api/making-logs", authMiddleware, async (req, res) => {
+  try { const { cocktail_eng, made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note } = req.body || {}; if (!cocktail_eng || !made_at) return res.status(400).json({ error: "酒款和日期不能为空" }); const result = await db.query(`INSERT INTO cocktail_making_logs (user_id,cocktail_eng,made_at,brands,rating,recipe_modified,modification_note,next_time_note) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`, [req.user.id, cocktail_eng, made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null]); res.status(201).json(result.rows[0]) }
+  catch (_) { res.status(500).json({ error: "保存调酒记录失败" }) }
+})
+app.post("/api/making-logs/:id/photo", authMiddleware, upload.single("photo"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "请选择 JPG、PNG 或 WebP 图片" })
+    const result = await db.query("UPDATE cocktail_making_logs SET photo_url=$1, updated_at=NOW() WHERE id=$2 AND user_id=$3 RETURNING photo_url", [`/uploads/making-logs/${req.file.filename}`, req.params.id, req.user.id])
+    if (!result.rows.length) { fs.unlinkSync(req.file.path); return res.status(404).json({ error: "记录不存在" }) }
+    res.json(result.rows[0])
+  } catch (_) { if (req.file) fs.unlink(req.file.path, () => {}); res.status(500).json({ error: "上传照片失败" }) }
+})
+app.delete("/api/making-logs/:id", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query("DELETE FROM cocktail_making_logs WHERE id = $1 AND user_id = $2 RETURNING id", [req.params.id, req.user.id])
+    if (!result.rows.length) return res.status(404).json({ error: "记录不存在" })
+    res.json({ ok: true })
+  } catch (_) { res.status(500).json({ error: "删除调酒记录失败" }) }
+})
+app.put("/api/making-logs/:id", authMiddleware, async (req, res) => {
+  try {
+    const { made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note } = req.body || {}
+    const result = await db.query(`UPDATE cocktail_making_logs SET made_at=$1, brands=$2, rating=$3, recipe_modified=$4, modification_note=$5, next_time_note=$6, updated_at=NOW() WHERE id=$7 AND user_id=$8 RETURNING *`, [made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null, req.params.id, req.user.id])
+    if (!result.rows.length) return res.status(404).json({ error: "记录不存在" })
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "更新调酒记录失败" }) }
 })
 
 // ====== 调配/品尝记录 API ======

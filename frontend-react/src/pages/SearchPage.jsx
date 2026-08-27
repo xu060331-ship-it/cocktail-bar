@@ -94,7 +94,7 @@ export default function SearchPage() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mb-8"
         >
-          <div className="relative">
+          <div className="relative rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
             <Search size={18} strokeWidth={1.5} className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
             <input
               type="text"

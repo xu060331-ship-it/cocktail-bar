@@ -139,7 +139,7 @@ export default function CocktailsPage() {
         </motion.div>
 
         {/* 搜索 + 筛选 */}
-        <div className="flex flex-wrap items-center gap-4 mb-10">
+        <div className="flex flex-wrap items-center gap-4 mb-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)]/45 p-3">
           <div className="relative flex-1 min-w-[220px] max-w-sm">
             <Search size={16} strokeWidth={1.5} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
             <input
@@ -219,7 +219,10 @@ export default function CocktailsPage() {
           </div>
         </div>
 
-        <p className="text-xs text-[var(--color-text-muted)] mb-6">共 {filtered.length} 款</p>
+        <div className="mb-6 flex items-center justify-between border-b border-[var(--color-border)] pb-4">
+          <p className="text-xs text-[var(--color-text-muted)]">共 {filtered.length} 款</p>
+          <span className="text-[10px] tracking-wide text-[var(--color-text-muted)]">按你的偏好探索</span>
+        </div>
         <div className="mb-6 flex items-center justify-end gap-2 text-xs text-[var(--color-text-muted)]">
           <label htmlFor="cocktail-sort">排序</label>
           <select id="cocktail-sort" value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-[var(--color-text-gray)] outline-none">

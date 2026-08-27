@@ -40,6 +40,7 @@ const navGroups = [
       { to: "/profile/bar", label: "我的酒柜" },
       { to: "/profile/playlists", label: "我的酒单" },
       { to: "/profile/notes", label: "我的笔记" },
+      { to: "/making-logs", label: "调酒记录" },
     ],
   },
 ]

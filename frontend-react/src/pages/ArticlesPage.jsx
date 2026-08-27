@@ -49,7 +49,7 @@ export default function ArticlesPage() {
   const rest = activeCat === "全部" ? articles.slice(1) : articles.filter((a) => a.cat === activeCat)
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-28">
       <div className="max-w-6xl mx-auto px-5">
         <motion.div
           initial={{ opacity: 0, y: 24 }}

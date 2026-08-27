@@ -6,3 +6,4 @@ dist/
 # 图片已压缩至29MB，可以上传
 front-end/
 frontend-react/src/assets/
+backend/uploads/

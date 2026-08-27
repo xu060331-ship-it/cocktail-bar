@@ -22,6 +22,7 @@ import LearnPage from "./pages/LearnPage"
 import EncyclopediaPage from "./pages/EncyclopediaPage"
 import TasteTestPage from "./pages/TasteTestPage"
 import GettingStartedPage from "./pages/GettingStartedPage"
+import MakingLogsPage from "./pages/MakingLogsPage"
 import MobileBottomNav from "./components/MobileBottomNav"
 
 function Layout() {
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:section" element={<ProfilePage />} />
+          <Route path="/making-logs" element={<MakingLogsPage />} />
           <Route path="/playlist/:id" element={<PlaylistDetailPage />} />
           <Route path="/popular" element={<PopularPage />} />
           <Route path="/ai-assistant" element={<AIAssistantPage />} />

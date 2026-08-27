@@ -6,6 +6,7 @@ import { useAuth } from "../lib/auth"
 import Breadcrumb from "../components/Breadcrumb"
 import AIDeepAnalysis from "../components/AIDeepAnalysis"
 import StarRating from "../components/StarRating"
+import MakingLogForm from "../components/MakingLogForm"
 import { useExperience } from "../lib/experience"
 import { motion } from "framer-motion"
 import { ArrowLeft, Clock, GlassWater, Heart, Copy, Check, Share2, ListPlus, Plus, Coffee } from "lucide-react"
@@ -26,6 +27,7 @@ export default function CocktailDetailPage() {
   const [note, setNote] = useState("")
   const [noteSaved, setNoteSaved] = useState(false)
   const [noteLoading, setNoteLoading] = useState(false)
+  const [showMakingLog, setShowMakingLog] = useState(false)
   const [favoriteFeedback, setFavoriteFeedback] = useState("")
 
   // 获取用户酒单
@@ -431,6 +433,8 @@ export default function CocktailDetailPage() {
 
         {/* 评分与品鉴 */}
         <StarRating cocktailEng={cocktail.eng} />
+
+        {user && <section className="mt-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6"><button type="button" onClick={() => setShowMakingLog(!showMakingLog)} className="text-sm font-semibold text-[var(--color-accent)]">{showMakingLog ? "收起调酒记录" : "记录这次调酒"}</button>{showMakingLog && <MakingLogForm cocktailEng={cocktail.eng} />}</section>}
 
         {/* 调酒笔记（仅登录用户） */}
         {user && (

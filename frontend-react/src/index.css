@@ -13,6 +13,7 @@
   --color-text-main: #ffffff;
   --noise-opacity: 0.04;
   --glow-opacity: 0.15;
+  --font-ui: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
 /* ====== 亮色主题 ====== */
@@ -28,6 +29,7 @@
   --color-text-main: #1a1713;
   --noise-opacity: 0.02;
   --glow-opacity: 0.08;
+  --font-ui: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
 @theme {
@@ -47,6 +49,27 @@ body {
   background-color: var(--color-bg-page);
   color: var(--color-text-main);
   margin: 0;
+}
+
+/* 操作界面使用无衬线字体，保留标题和正文的编辑感 */
+button, input, select, textarea, nav, [class*="rounded-full"], [class*="text-xs"] {
+  font-family: var(--font-ui);
+}
+
+button, input, select, textarea {
+  letter-spacing: 0;
+}
+
+button, select, input, textarea {
+  outline-offset: 3px;
+}
+
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 1px solid var(--color-accent);
+}
+
+select {
+  min-height: 34px;
 }
 
 /* 暖色噪点纹理层 */
