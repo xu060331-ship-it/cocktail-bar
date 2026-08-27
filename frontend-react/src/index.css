@@ -68,6 +68,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
   outline: 1px solid var(--color-accent);
 }
 
+.font-ui { font-family: var(--font-ui); }
+
 select {
   min-height: 34px;
 }

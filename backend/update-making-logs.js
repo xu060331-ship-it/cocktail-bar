@@ -14,6 +14,8 @@ async function run() {
     next_time_note TEXT, photo_url TEXT, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW()
   )`)
   await client.query("CREATE INDEX IF NOT EXISTS idx_making_logs_user ON cocktail_making_logs(user_id, made_at DESC)")
+  await client.query("ALTER TABLE cocktail_making_logs ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) NOT NULL DEFAULT 'private'")
+  await client.query("ALTER TABLE cocktail_making_logs ADD COLUMN IF NOT EXISTS moderation_status VARCHAR(20) NOT NULL DEFAULT 'private'")
   await client.end()
   console.log("cocktail_making_logs migration complete")
 }

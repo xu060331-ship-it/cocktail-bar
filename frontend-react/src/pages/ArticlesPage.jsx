@@ -90,7 +90,7 @@ export default function ArticlesPage() {
             >
               <div className="flex flex-col lg:flex-row">
                 <div className="lg:w-[45%] h-64 lg:h-auto bg-[var(--color-accent-dim)] shrink-0 overflow-hidden">
-                  <img src={articleImg(featured.title)} alt={featured.title} className="w-full h-full object-cover min-h-[250px]" loading="lazy" />
+                  <img src={featured.image_url || articleImg(featured.title)} alt={featured.title} className="w-full h-full object-cover min-h-[250px]" loading="lazy" />
                 </div>
                 <div className="flex-1 p-10 flex flex-col justify-center">
                   <span className="text-[10px] bg-[var(--color-accent-dim)] text-[var(--color-accent)] px-2.5 py-0.5 rounded-full self-start mb-4">{featured.cat}</span>

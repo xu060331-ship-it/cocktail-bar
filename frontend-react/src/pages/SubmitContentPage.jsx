@@ -1,0 +1,16 @@
+import { useState } from "react"
+import { fetchAPI } from "../lib/api"
+import { useAuth } from "../lib/auth"
+
+const types = { flashcard: "学习卡片", encyclopedia: "调酒百科", article: "文章" }
+export default function SubmitContentPage() {
+  const { user } = useAuth()
+  const [form, setForm] = useState({ content_type: "flashcard", title: "", summary: "", question: "", answer: "", category: "" })
+  const [message, setMessage] = useState("")
+  async function submit(e) {
+    e.preventDefault(); setMessage("")
+    try { await fetchAPI("/api/submissions", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, body: { content_type: form.content_type, title: form.title, summary: form.summary, content: { question: form.question, answer: form.answer, category: form.category, body: form.answer } } }); setMessage("已提交，审核通过后会展示在对应页面"); setForm((v) => ({ ...v, title: "", summary: "", question: "", answer: "" })) } catch (err) { setMessage(err.message) }
+  }
+  if (!user) return <main className="mx-auto min-h-screen max-w-2xl px-5 pt-32 text-center"><h1 className="font-serif text-3xl">请先登录后投稿</h1></main>
+  return <main className="min-h-screen bg-[var(--color-bg-page)] px-5 pb-24 pt-24 text-[var(--color-text-main)]"><form onSubmit={submit} className="mx-auto max-w-2xl space-y-5"><p className="font-ui text-xs tracking-[0.3em] text-[var(--color-accent)]">CREATOR SUBMISSION</p><h1 className="font-serif text-4xl">提交内容</h1><p className="font-ui text-sm text-[var(--color-text-muted)]">提交后会进入审核，审核通过才会公开。</p><select value={form.content_type} onChange={(e) => setForm({ ...form, content_type: e.target.value })} className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm">{Object.entries(types).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select><input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="标题" className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm" /><input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="分类（可选）" className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm" /><textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} placeholder="摘要" rows={3} className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm" /><textarea required value={form.content_type === "flashcard" ? form.question : form.answer} onChange={(e) => setForm({ ...form, [form.content_type === "flashcard" ? "question" : "answer"]: e.target.value })} placeholder={form.content_type === "flashcard" ? "问题" : "正文内容"} rows={8} className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm" />{form.content_type === "flashcard" && <textarea required value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} placeholder="答案" rows={8} className="w-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3 font-ui text-sm" />}<button className="bg-[var(--color-accent)] px-5 py-3 font-ui text-sm font-semibold text-[var(--color-bg-page)]">提交审核</button>{message && <p className="font-ui text-sm text-[var(--color-accent)]">{message}</p>}</form></main>
+}

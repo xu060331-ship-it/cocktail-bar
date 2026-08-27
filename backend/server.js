@@ -5,13 +5,16 @@ const { Client } = require("pg")
 const multer = require("multer")
 const fs = require("fs")
 const path = require("path")
-const { mountAuthRoutes, authMiddleware } = require("./auth")
+const crypto = require("crypto")
+const { mountAuthRoutes, authMiddleware, adminMiddleware } = require("./auth")
 const { AI_ENABLED, XIAOJIU_SYSTEM_PROMPT, callAIWithRetry, callAIStream, extractJSON, validateCitations, ruleBasedRecommend, fallbackChatReply, generateCocktailEnhancementPrompt, generateRecommendationPrompt } = require("./ai")
 const { getPersona, listPersonas } = require("./ai-personas")
 const { STATIC_CARDS, generateCocktailCards } = require("./flashcards")
 const { listCategories, getCategory, searchEntries } = require("./encyclopedia")
 const { jwtSecret, port, frontendUrl } = require("./config")
 const app = express()
+const errorLog = []
+function recordError(scope, message) { errorLog.unshift({ scope, message, at: new Date().toISOString() }); if (errorLog.length > 100) errorLog.pop() }
 const uploadDir = path.join(__dirname, "uploads", "making-logs")
 fs.mkdirSync(uploadDir, { recursive: true })
 const upload = multer({
@@ -19,10 +22,149 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_, file, cb) => cb(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)),
 })
+const contentImageDir = path.join(__dirname, "uploads", "content")
+fs.mkdirSync(contentImageDir, { recursive: true })
+const contentImageUpload = multer({ storage: multer.diskStorage({ destination: contentImageDir, filename: (_, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname).toLowerCase()}`) }), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_, file, cb) => cb(null, ["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) })
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 app.use(cors(frontendUrl ? { origin: frontendUrl } : undefined))
 app.use(express.json())
+
+const CONTENT_STATUSES = new Set(["draft", "review", "published", "archived"])
+
+app.get("/api/admin/overview", adminMiddleware, async (_, res) => {
+  try {
+    const [cocktails, articles, popular, ai] = await Promise.all([
+      db.query("SELECT id, eng, chn, cat, tip AS description, tip, image_url, COALESCE(review_status, 'published') AS review_status FROM cocktails ORDER BY id"),
+      db.query("SELECT id, title, cat, summary AS description, body, image_url, COALESCE(review_status, 'published') AS review_status FROM articles ORDER BY id DESC"),
+      db.query("SELECT eng, chn, view_count FROM cocktails ORDER BY view_count DESC LIMIT 10"),
+      db.query("SELECT cocktail_eng, generated_at FROM ai_enhancements ORDER BY generated_at DESC LIMIT 50").catch(() => ({ rows: [] })),
+    ])
+    res.json({ cocktails: cocktails.rows, articles: articles.rows, popular: popular.rows, ai: ai.rows, errors: errorLog })
+  } catch (_) { res.status(500).json({ error: "后台数据加载失败" }) }
+})
+
+app.put("/api/admin/cocktails/:id", adminMiddleware, async (req, res) => {
+  const { chn, cat, description, tip, review_status } = req.body || {}
+  if (review_status && !CONTENT_STATUSES.has(review_status)) return res.status(400).json({ error: "无效的审核状态" })
+  try { const result = await db.query("UPDATE cocktails SET chn=$1, cat=$2, tip=$3, review_status=COALESCE($4, review_status) WHERE id=$5 RETURNING id, eng, chn, cat, tip AS description, tip, COALESCE(review_status, 'published') AS review_status", [chn, cat, description || tip || null, review_status || "published", req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "酒款不存在" }); res.json(result.rows[0]) }
+  catch (err) { recordError("admin.cocktail", err.message); res.status(500).json({ error: "酒款保存失败" }) }
+})
+
+app.put("/api/admin/articles/:id", adminMiddleware, async (req, res) => {
+  const { title, cat, description, body, review_status } = req.body || {}
+  if (review_status && !CONTENT_STATUSES.has(review_status)) return res.status(400).json({ error: "无效的审核状态" })
+  try { const result = await db.query("UPDATE articles SET title=$1, cat=$2, summary=$3, body=$4, review_status=COALESCE($5, review_status) WHERE id=$6 RETURNING id, title, cat, summary AS description, body, COALESCE(review_status, 'published') AS review_status", [title, cat, description, body, review_status || "published", req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "文章不存在" }); res.json(result.rows[0]) }
+  catch (err) { recordError("admin.article", err.message); res.status(500).json({ error: "文章保存失败" }) }
+})
+
+app.post("/api/admin/images/:type/:id", adminMiddleware, contentImageUpload.single("image"), async (req, res) => {
+  const table = req.params.type === "cocktails" ? "cocktails" : req.params.type === "articles" ? "articles" : null
+  if (!table) return res.status(400).json({ error: "不支持的内容类型" })
+  if (!req.file) return res.status(400).json({ error: "请选择 JPG、PNG 或 WebP 图片" })
+  try {
+    const url = `/uploads/content/${req.file.filename}`
+    const result = await db.query(`UPDATE ${table} SET image_url=$1 WHERE id=$2 RETURNING id, image_url`, [url, req.params.id])
+    if (!result.rows.length) { fs.unlink(req.file.path, () => {}); return res.status(404).json({ error: "内容不存在" }) }
+    res.json(result.rows[0])
+  } catch (_) { fs.unlink(req.file.path, () => {}); res.status(500).json({ error: "图片保存失败" }) }
+})
+
+app.post("/api/submissions", authMiddleware, async (req, res) => {
+  const { content_type, title, summary = "", content = {} } = req.body || {}
+  if (!["flashcard", "encyclopedia", "article"].includes(content_type) || !title?.trim()) return res.status(400).json({ error: "投稿类型和标题不能为空" })
+  try {
+    const result = await db.query("INSERT INTO content_submissions (user_id, content_type, title, summary, content) VALUES ($1,$2,$3,$4,$5) RETURNING id, content_type, title, status, created_at", [req.user.id, content_type, title.trim(), summary, JSON.stringify(content)])
+    res.status(201).json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "提交投稿失败，请先完成数据库迁移" }) }
+})
+
+app.get("/api/submissions/mine", authMiddleware, async (req, res) => {
+  try { const result = await db.query("SELECT id, content_type, title, summary, status, reviewer_note, created_at, reviewed_at FROM content_submissions WHERE user_id=$1 ORDER BY created_at DESC", [req.user.id]); res.json(result.rows) }
+  catch (_) { res.status(500).json({ error: "读取投稿记录失败" }) }
+})
+
+app.get("/api/notifications", authMiddleware, async (req, res) => {
+  try { const result = await db.query("SELECT id, type, title, body, is_read, created_at FROM notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50", [req.user.id]); res.json(result.rows) } catch (_) { res.status(500).json({ error: "读取通知失败" }) }
+})
+app.patch("/api/notifications/read", authMiddleware, async (req, res) => {
+  try { await db.query("UPDATE notifications SET is_read=TRUE WHERE user_id=$1", [req.user.id]); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "更新通知失败" }) }
+})
+
+app.get("/api/community", async (_, res) => {
+  try {
+    const [content, logs] = await Promise.all([
+      db.query("SELECT id, content_type, title, summary, content, created_at FROM published_community_content ORDER BY created_at DESC LIMIT 60"),
+      db.query("SELECT l.id, l.cocktail_eng, l.made_at, l.brands, l.rating, l.photo_url, l.created_at, c.chn, u.nickname FROM cocktail_making_logs l LEFT JOIN cocktails c ON c.eng=l.cocktail_eng LEFT JOIN users u ON u.id=l.user_id WHERE l.visibility='public' AND l.moderation_status='approved' ORDER BY l.created_at DESC LIMIT 60")
+    ])
+    res.json({ content: content.rows, logs: logs.rows })
+  } catch (_) { res.status(500).json({ error: "社区内容加载失败" }) }
+})
+
+app.post("/api/reports", authMiddleware, async (req, res) => {
+  const { target_type, target_id, reason, detail = "" } = req.body || {}
+  if (!["article", "encyclopedia", "flashcard", "making_log", "comment"].includes(target_type) || !target_id || !reason) return res.status(400).json({ error: "举报信息不完整" })
+  try { await db.query("INSERT INTO content_reports (reporter_id,target_type,target_id,reason,detail) VALUES ($1,$2,$3,$4,$5)", [req.user.id, target_type, String(target_id), reason, detail]); res.status(201).json({ ok: true }) } catch (_) { res.status(500).json({ error: "举报提交失败" }) }
+})
+
+app.get("/api/admin/reports", adminMiddleware, async (_, res) => {
+  try { const result = await db.query("SELECT r.*, u.email, u.nickname FROM content_reports r JOIN users u ON u.id=r.reporter_id ORDER BY r.status='pending' DESC, r.created_at DESC"); res.json(result.rows) } catch (_) { res.status(500).json({ error: "读取举报失败" }) }
+})
+
+app.patch("/api/admin/reports/:id", adminMiddleware, async (req, res) => {
+  const { status } = req.body || {}
+  if (!["resolved", "dismissed"].includes(status)) return res.status(400).json({ error: "处理状态无效" })
+  try { const result = await db.query("UPDATE content_reports SET status=$1, resolved_at=NOW() WHERE id=$2 RETURNING *", [status, req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "举报不存在" }); res.json(result.rows[0]) } catch (_) { res.status(500).json({ error: "处理举报失败" }) }
+})
+
+app.delete("/api/admin/comments/:id", adminMiddleware, async (req, res) => {
+  try { const result = await db.query("DELETE FROM cocktail_ratings WHERE id=$1 RETURNING id", [req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "评论不存在" }); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "删除评论失败" }) }
+})
+
+app.patch("/api/admin/comments/:id", adminMiddleware, async (req, res) => {
+  if (typeof req.body?.is_hidden !== "boolean") return res.status(400).json({ error: "请提供屏蔽状态" })
+  try { const result = await db.query("UPDATE cocktail_ratings SET is_hidden=$1, updated_at=NOW() WHERE id=$2 RETURNING id, is_hidden", [req.body.is_hidden, req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "评论不存在" }); res.json(result.rows[0]) } catch (_) { res.status(500).json({ error: "更新评论状态失败" }) }
+})
+
+app.get("/api/admin/content-submissions", adminMiddleware, async (_, res) => {
+  try { const result = await db.query("SELECT s.*, u.email, u.nickname FROM content_submissions s JOIN users u ON u.id=s.user_id ORDER BY s.status='pending' DESC, s.created_at DESC"); res.json(result.rows) }
+  catch (_) { res.status(500).json({ error: "读取内容投稿失败" }) }
+})
+
+app.patch("/api/admin/content-submissions/:id", adminMiddleware, async (req, res) => {
+  const { status, reviewer_note = "" } = req.body || {}
+  if (!["approved", "rejected"].includes(status)) return res.status(400).json({ error: "审核状态无效" })
+  try {
+    const result = await db.query("UPDATE content_submissions SET status=$1, reviewer_note=$2, reviewed_at=NOW() WHERE id=$3 RETURNING *", [status, reviewer_note, req.params.id])
+    if (!result.rows.length) return res.status(404).json({ error: "投稿不存在" })
+    if (status === "approved") {
+      const item = result.rows[0]
+      if (item.content_type === "article") await db.query("INSERT INTO articles (title, cat, summary, body) VALUES ($1,$2,$3,$4)", [item.title, item.content.category || "用户投稿", item.summary, item.content.body || item.content.answer || ""])
+      else await db.query("INSERT INTO published_community_content (submission_id, content_type, title, summary, content) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (submission_id) DO NOTHING", [item.id, item.content_type, item.title, item.summary, item.content])
+      if (typeof cachedCards !== "undefined") { cachedCards = null; cardsLoadedAt = 0 }
+    }
+    const item = result.rows[0]
+    await db.query("INSERT INTO notifications (user_id,type,title,body) VALUES ($1,$2,$3,$4)", [item.user_id, "submission_review", status === "approved" ? "投稿已通过" : "投稿未通过", status === "approved" ? `你的${item.content_type === "article" ? "文章" : item.content_type === "flashcard" ? "学习卡片" : "百科词条"}《${item.title}》已通过审核。` : `你的投稿《${item.title}》未通过审核。${reviewer_note ? `原因：${reviewer_note}` : "请修改后重新提交。"}`])
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "审核投稿失败" }) }
+})
+
+app.get("/api/admin/submissions", adminMiddleware, async (_, res) => {
+  try {
+    const result = await db.query(`SELECT l.id, l.cocktail_eng, l.made_at, l.brands, l.rating, l.photo_url, l.visibility, l.moderation_status, u.email, u.nickname, c.chn FROM cocktail_making_logs l JOIN users u ON u.id = l.user_id LEFT JOIN cocktails c ON c.eng = l.cocktail_eng WHERE l.visibility = 'public' ORDER BY l.created_at DESC`)
+    res.json(result.rows)
+  } catch (_) { res.status(500).json({ error: "读取公开投稿失败" }) }
+})
+
+app.patch("/api/admin/submissions/:id", adminMiddleware, async (req, res) => {
+  const status = req.body?.moderation_status
+  if (!["approved", "rejected", "pending"].includes(status)) return res.status(400).json({ error: "无效的投稿状态" })
+  try {
+    const result = await db.query("UPDATE cocktail_making_logs SET moderation_status=$1, visibility=CASE WHEN $1='approved' THEN 'public' ELSE 'private' END, updated_at=NOW() WHERE id=$2 AND visibility='public' RETURNING id, moderation_status, visibility", [status, req.params.id])
+    if (!result.rows.length) return res.status(404).json({ error: "投稿不存在" })
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "更新投稿状态失败" }) }
+})
 
 const connStr = process.env.DATABASE_URL || "postgresql://postgres:tony0331@localhost:5432/cocktail_bar"
 const isLocal = connStr.includes("localhost") || connStr.includes("127.0.0.1")
@@ -545,6 +687,14 @@ app.get("/api/bar/match", authMiddleware, async (req, res) => {
     const all = await db.query("SELECT * FROM cocktails")
     const matchable = []
     const partial = []
+    const missingCounts = new Map()
+    const ingredientType = (name) => {
+      if (/汁|柠檬|青柠|橙|菠萝|蔓越莓|葡萄柚/.test(name)) return "果汁/水果"
+      if (/糖浆|蜂蜜|石榴糖浆|糖/.test(name)) return "糖浆/甜味剂"
+      if (/苦精|美思|君度|金巴利|阿佩罗|利口酒|查特/.test(name)) return "利口酒/加强酒"
+      if (/皮|薄荷|樱桃|橄榄|装饰|盐|胡椒/.test(name)) return "装饰物"
+      return "基酒/其他"
+    }
 
     for (const c of all.rows) {
       if (!c.ingredients?.length) continue
@@ -559,14 +709,16 @@ app.get("/api/bar/match", authMiddleware, async (req, res) => {
           return n.includes(m) || m.includes(n) || nClean.includes(mClean) || mClean.includes(nClean)
         })
       }).length
+      const missing = needed.filter(n => ![...expandedIngs].some(m => n.replace(/\s+/g, "").includes(m.replace(/\s+/g, "")) || m.replace(/\s+/g, "").includes(n.replace(/\s+/g, ""))))
+      missing.forEach((name) => { const current = missingCounts.get(name) || { name, count: 0, type: ingredientType(name) }; current.count++; missingCounts.set(name, current) })
       if (matchCount === needed.length) {
         matchable.push(c)
       } else if (matchCount >= needed.length - 1 && needed.length > 1) {
-        partial.push(c)
+        partial.push({ ...c, missing_ingredients: missing })
       }
     }
 
-    res.json({ matchable, partial, total: matchable.length + partial.length, barSize: myIngs.length })
+    res.json({ matchable, partial, missingIngredients: [...missingCounts.values()].sort((a, b) => b.count - a.count), total: matchable.length + partial.length, barSize: myIngs.length })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
@@ -633,6 +785,25 @@ app.get("/api/playlists/:id", authMiddleware, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
+})
+
+app.get("/api/shared-playlists/:token", async (req, res) => {
+  try {
+    const pl = await db.query("SELECT id, name, description, is_public, share_token FROM playlists WHERE share_token = $1 AND is_public = TRUE", [req.params.token])
+    if (!pl.rows.length) return res.status(404).json({ error: "公开酒单不存在" })
+    const items = await db.query("SELECT c.* FROM playlist_items pi JOIN cocktails c ON pi.cocktail_eng = c.eng WHERE pi.playlist_id = $1 ORDER BY pi.added_at DESC", [pl.rows[0].id])
+    res.json({ playlist: pl.rows[0], cocktails: items.rows, readonly: true })
+  } catch (_) { res.status(500).json({ error: "读取公开酒单失败" }) }
+})
+
+app.patch("/api/playlists/:id/sharing", authMiddleware, async (req, res) => {
+  try {
+    const isPublic = !!req.body?.is_public
+    const token = isPublic ? crypto.randomBytes(24).toString("hex") : null
+    const result = await db.query("UPDATE playlists SET is_public=$1, share_token=$2 WHERE id=$3 AND user_id=$4 RETURNING id, is_public, share_token", [isPublic, token, req.params.id, req.user.id])
+    if (!result.rows.length) return res.status(404).json({ error: "酒单不存在" })
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "更新分享状态失败" }) }
 })
 
 // 添加酒款到酒单
@@ -844,14 +1015,26 @@ app.post("/api/ai/recommend", async (req, res) => {
   try {
     if (!AI_ENABLED) return res.status(503).json({ error: "AI功能暂未开启" })
 
-    const { mood, condition, occasion, tastePrefs, availableIngredients, nonAlcoholic } = req.body || {}
+    const { mood, condition, occasion, tastePrefs, availableIngredients, nonAlcoholic, restrictions } = req.body || {}
     if (!mood && !condition && !occasion && (!tastePrefs || tastePrefs.length === 0) && (!availableIngredients || availableIngredients.length === 0)) {
       return res.status(400).json({ error: "请至少填写一项偏好信息" })
     }
 
     // 获取所有鸡尾酒
-    const allCocktails = await db.query("SELECT eng, chn, cat, ingredients, taste_tags, difficulty, occasion, view_count FROM cocktails ORDER BY id")
+    const allCocktails = await db.query("SELECT eng, chn, cat, ingredients, method, taste_tags, difficulty, occasion, view_count FROM cocktails ORDER BY id")
     const cocktails = allCocktails.rows
+    const validateRecipe = (cocktail) => {
+      const ingredients = cocktail.ingredients || []
+      const text = ingredients.join("、")
+      const available = availableIngredients || []
+      const missing = available.length ? ingredients.filter((item) => !available.some((owned) => item.includes(owned) || owned.includes(item))) : []
+      const strong = ingredients.filter((item) => /金酒|伏特加|朗姆|龙舌兰|威士忌|白兰地|干邑/.test(item)).length
+      const hasAcid = /柠檬|青柠|柑橘|葡萄柚|酸/.test(text)
+      const hasSweet = /糖浆|蜂蜜|甜|利口酒|君度|果汁|可乐/.test(text)
+      const words = [...(restrictions || []), ...(condition || "").split(/[，,、\s]+/).filter(Boolean)]
+      const forbidden = words.filter((word) => (word.includes("乳") && /奶油|牛奶|乳/.test(text)) || (word.includes("蛋") && /蛋清|蛋/.test(text)) || (word.includes("坚果") && /杏仁|榛子|坚果/.test(text)) || (word.includes("咖啡") && /咖啡|浓缩/.test(text)) || (word.includes("低酒精") && strong >= 2))
+      return { missingIngredients: missing, alcohol: nonAlcoholic ? "已选择无酒精，但请确认替代基酒" : strong >= 3 ? "酒精度偏高，建议降低基酒比例" : strong === 2 ? "酒精度中等，注意饮用量" : "酒精度较低", balance: hasAcid && hasSweet ? "甜酸结构基本完整" : "可能需要补充甜味或酸味", restrictions: forbidden, suitable: cocktail.method ? `${cocktail.method.method || "标准调法"} · ${cocktail.method.glass || "杯型按酒谱"}` : "请按酒谱方法和杯型制作" }
+    }
 
     // 尝试 AI 推荐
     let result = null
@@ -879,7 +1062,7 @@ app.post("/api/ai/recommend", async (req, res) => {
           // 校验通过
           const recommendations = validation.valid.map(rec => {
             const c = cocktails.find(co => co.eng === rec.eng)
-            return c ? { ...c, aiReason: rec.reason, matchScore: rec.matchScore, matchDetails: rec.matchDetails } : null
+             return c ? { ...c, aiReason: rec.reason, matchScore: rec.matchScore, matchDetails: rec.matchDetails, validation: validateRecipe(c) } : null
           }).filter(Boolean)
 
           result = {
@@ -903,6 +1086,7 @@ app.post("/api/ai/recommend", async (req, res) => {
         { mood, condition, occasion, tastePrefs, availableIngredients, nonAlcoholic },
         cocktails
       )
+      result.recommendations = (result.recommendations || []).map((rec) => ({ ...rec, validation: validateRecipe(rec) }))
     }
 
     res.json({ ...result, _fallback: usedFallback })
@@ -1076,7 +1260,7 @@ app.get("/api/making-logs", authMiddleware, async (req, res) => {
   catch (_) { res.status(500).json({ error: "读取调酒记录失败" }) }
 })
 app.post("/api/making-logs", authMiddleware, async (req, res) => {
-  try { const { cocktail_eng, made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note } = req.body || {}; if (!cocktail_eng || !made_at) return res.status(400).json({ error: "酒款和日期不能为空" }); const result = await db.query(`INSERT INTO cocktail_making_logs (user_id,cocktail_eng,made_at,brands,rating,recipe_modified,modification_note,next_time_note) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`, [req.user.id, cocktail_eng, made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null]); res.status(201).json(result.rows[0]) }
+  try { const { cocktail_eng, made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note, visibility = "private" } = req.body || {}; if (!cocktail_eng || !made_at) return res.status(400).json({ error: "酒款和日期不能为空" }); const isPublic = visibility === "public"; const result = await db.query(`INSERT INTO cocktail_making_logs (user_id,cocktail_eng,made_at,brands,rating,recipe_modified,modification_note,next_time_note,visibility,moderation_status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`, [req.user.id, cocktail_eng, made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null, isPublic ? "public" : "private", isPublic ? "pending" : "private"]); res.status(201).json(result.rows[0]) }
   catch (_) { res.status(500).json({ error: "保存调酒记录失败" }) }
 })
 app.post("/api/making-logs/:id/photo", authMiddleware, upload.single("photo"), async (req, res) => {
@@ -1096,8 +1280,8 @@ app.delete("/api/making-logs/:id", authMiddleware, async (req, res) => {
 })
 app.put("/api/making-logs/:id", authMiddleware, async (req, res) => {
   try {
-    const { made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note } = req.body || {}
-    const result = await db.query(`UPDATE cocktail_making_logs SET made_at=$1, brands=$2, rating=$3, recipe_modified=$4, modification_note=$5, next_time_note=$6, updated_at=NOW() WHERE id=$7 AND user_id=$8 RETURNING *`, [made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null, req.params.id, req.user.id])
+    const { made_at, brands = [], rating, recipe_modified = false, modification_note, next_time_note, visibility } = req.body || {}
+    const result = await db.query(`UPDATE cocktail_making_logs SET made_at=$1, brands=$2, rating=$3, recipe_modified=$4, modification_note=$5, next_time_note=$6, visibility=CASE WHEN $9='public' THEN 'public' ELSE 'private' END, moderation_status=CASE WHEN $9='public' THEN 'pending' ELSE 'private' END, updated_at=NOW() WHERE id=$7 AND user_id=$8 RETURNING *`, [made_at, JSON.stringify(Array.isArray(brands) ? brands : []), rating || null, !!recipe_modified, modification_note || null, next_time_note || null, req.params.id, req.user.id, visibility])
     if (!result.rows.length) return res.status(404).json({ error: "记录不存在" })
     res.json(result.rows[0])
   } catch (_) { res.status(500).json({ error: "更新调酒记录失败" }) }
@@ -1184,9 +1368,9 @@ app.get("/api/ratings/:eng", async (req, res) => {
     const reviews = await db.query(
       `SELECT cr.id, cr.rating, cr.comment, cr.created_at, u.nickname
        FROM cocktail_ratings cr
-       JOIN users u ON cr.user_id = u.id
-       WHERE cr.cocktail_eng = $1
-       ORDER BY cr.created_at DESC
+       LEFT JOIN users u ON cr.user_id = u.id
+       WHERE cr.cocktail_eng = $1 AND cr.is_hidden = FALSE
+       ORDER BY cr.updated_at DESC, cr.created_at DESC
        LIMIT 50`,
       [eng]
     )
@@ -1430,19 +1614,23 @@ function generateProfileSummary(tastes, answers) {
 
 // ====== 调酒百科 API ======
 
-app.get("/api/encyclopedia", (req, res) => {
+app.get("/api/encyclopedia", async (req, res) => {
   try {
     const categories = listCategories()
+    const extra = await db.query("SELECT content->>'category' AS category, COUNT(*)::int AS count FROM published_community_content WHERE content_type='encyclopedia' GROUP BY content->>'category'")
+    extra.rows.forEach((row) => { const category = categories.find((item) => item.key === row.category); if (category) category.entryCount += row.count })
     res.json({ categories })
   } catch (err) {
     res.status(503).json({ error: "百科服务暂时不可用" })
   }
 })
 
-app.get("/api/encyclopedia/:category", (req, res) => {
+app.get("/api/encyclopedia/:category", async (req, res) => {
   try {
     const cat = getCategory(req.params.category)
     if (!cat) return res.status(404).json({ error: "分类不存在" })
+    const extra = await db.query("SELECT id, title, summary, content FROM published_community_content WHERE content_type='encyclopedia' AND content->>'category'=$1 ORDER BY created_at DESC", [req.params.category])
+    cat.entries = [...cat.entries, ...extra.rows.map((row) => ({ id: `community_${row.id}`, title: row.title, summary: row.summary, detail: [{ subtitle: "社区贡献", content: row.content.body || row.content.answer || "" }] }))]
     res.json(cat)
   } catch (err) {
     res.status(503).json({ error: "百科服务暂时不可用" })
@@ -1497,7 +1685,9 @@ async function loadAllCards() {
   } catch (e) { /* ignore */ }
 
   const generated = generateCocktailCards(cocktails.rows, methodsMap, tipsMap, attrsMap)
-  cachedCards = [...STATIC_CARDS, ...generated]
+  const community = await db.query("SELECT id, title, summary, content FROM published_community_content WHERE content_type='flashcard' ORDER BY created_at DESC")
+  const communityCards = community.rows.map((row) => ({ id: `community_${row.id}`, category: row.content.category || "community", question: row.content.question || row.title, answer: row.content.answer || row.summary || "", hint: row.content.hint || "社区贡献", difficulty: Number(row.content.difficulty) || 1 }))
+  cachedCards = [...STATIC_CARDS, ...generated, ...communityCards]
   cardsLoadedAt = Date.now()
   return cachedCards
 }
@@ -1559,6 +1749,7 @@ app.get("/api/flashcards/progress", authMiddleware, async (req, res) => {
       mastered_count: mastered.length,
       mastered,
       reviewed,
+      activity: result.rows.map((r) => ({ card_id: r.card_id, mastered: r.mastered, reviewed_at: r.reviewed_at })),
     })
   } catch (err) {
     console.error("获取进度失败:", err.message)

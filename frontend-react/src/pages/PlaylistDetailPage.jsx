@@ -4,22 +4,24 @@ import { useAuth } from "../lib/auth"
 import { fetchAPI } from "../lib/api"
 import { cocktailImg } from "../lib/images"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Trash2 } from "lucide-react"
+import { ArrowLeft, Trash2, Share2, Copy, Check } from "lucide-react"
 
 export default function PlaylistDetailPage() {
-  const { id } = useParams()
+  const { id, token: sharedToken } = useParams()
   const { user } = useAuth()
   const token = localStorage.getItem("token")
   const authHeaders = { headers: { Authorization: `Bearer ${token}` } }
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [sharing, setSharing] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!user) { setLoading(false); return }
-    fetchAPI(`/api/playlists/${id}`, authHeaders)
+    if (!user && !sharedToken) { setLoading(false); return }
+    fetchAPI(sharedToken ? `/api/shared-playlists/${sharedToken}` : `/api/playlists/${id}`, sharedToken ? {} : authHeaders)
       .then(d => { setData(d); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [id, user])
+  }, [id, user, sharedToken])
 
   async function removeItem(eng) {
     await fetchAPI(`/api/playlists/${id}/items/${encodeURIComponent(eng)}`, { method: "DELETE", headers: authHeaders.headers })
@@ -32,14 +34,14 @@ export default function PlaylistDetailPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
       <div className="max-w-3xl mx-auto px-5">
-        <Link to="/profile" className="flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors mb-6">
+        <Link to={data.readonly ? "/" : "/profile"} className="flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors mb-6">
           <ArrowLeft size={14} /> 返回个人中心
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl text-[var(--color-text-main)] font-serif mb-2">{data.playlist.name}</h1>
           {data.playlist.description && <p className="text-sm text-[var(--color-text-muted)]">{data.playlist.description}</p>}
-          <p className="text-xs text-[var(--color-text-muted)] mt-3">{data.cocktails.length} 款酒</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3"><p className="text-xs text-[var(--color-text-muted)]">{data.cocktails.length} 款酒</p>{!data.readonly && <button type="button" onClick={async () => { const token = localStorage.getItem("token"); const next = await fetchAPI(`/api/playlists/${id}/sharing`, { method: "PATCH", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: { is_public: !data.playlist.is_public } }); setData({ ...data, playlist: { ...data.playlist, ...next } }); if (next.is_public) { await navigator.clipboard.writeText(`${window.location.origin}/playlist/share/${next.share_token}`); setCopied(true); setTimeout(() => setCopied(false), 2000) } }} disabled={sharing} className="flex items-center gap-1 text-xs text-[var(--color-accent)]">{data.playlist.is_public ? <Share2 size={13} /> : <Share2 size={13} />}{data.playlist.is_public ? "已公开，复制链接" : "公开分享"}</button>}{copied && <span className="text-xs text-emerald-400"><Check size={12} className="inline" /> 链接已复制</span>}</div>
         </motion.div>
 
         {data.cocktails.length === 0 ? (
@@ -62,7 +64,7 @@ export default function PlaylistDetailPage() {
                         <p className="text-xs text-[var(--color-text-muted)] italic">{c.eng}</p>
                       </div>
                     </Link>
-                    <button onClick={() => removeItem(c.eng)} className="text-[var(--color-text-muted)] hover:text-red-400 transition-colors p-1 shrink-0"><Trash2 size={14} /></button>
+                    {!data.readonly && <button onClick={() => removeItem(c.eng)} className="text-[var(--color-text-muted)] hover:text-red-400 transition-colors p-1 shrink-0"><Trash2 size={14} /></button>}
                   </div>
                 </motion.div>
               ))}

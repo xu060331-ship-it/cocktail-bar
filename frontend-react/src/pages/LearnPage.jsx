@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Sparkles, BarChart3, Trophy, Filter, Loader2 } from "lucide-react"
+import { Sparkles, BarChart3, Trophy, Filter, Loader2, Flame, Layers3, ArrowRight } from "lucide-react"
 import FlashCard from "../components/FlashCard"
 import { fetchAPI } from "../lib/api"
 import { useAuth } from "../lib/auth"
@@ -25,6 +25,7 @@ export default function LearnPage() {
   const [savingId, setSavingId] = useState(null)
   const [category, setCategory] = useState("")
   const [stats, setStats] = useState({ total: 0, mastered: 0, reviewed: 0 })
+  const [activity, setActivity] = useState([])
 
   // Load cards
   const loadCards = useCallback(async () => {
@@ -75,6 +76,7 @@ export default function LearnPage() {
           mastered: data.mastered_count || 0,
           reviewed: data.total_reviewed || 0,
         }))
+        setActivity(data.activity || [])
       })
       .catch(() => {})
   }, [user])
@@ -120,6 +122,17 @@ export default function LearnPage() {
   }
 
   const masteryPercent = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0
+  const activityDays = [...new Set(activity.map((item) => new Date(item.reviewed_at).toISOString().slice(0, 10)))].sort().reverse()
+  let streak = 0
+  for (let i = 0; i < activityDays.length; i++) {
+    const expected = new Date(); expected.setDate(expected.getDate() - i)
+    if (activityDays[i] !== expected.toISOString().slice(0, 10)) break
+    streak++
+  }
+  const level = stats.mastered >= 100 ? "调酒导师" : stats.mastered >= 50 ? "熟练调酒师" : stats.mastered >= 20 ? "进阶学徒" : "入门学徒"
+  const weeklyCount = activity.filter((item) => Date.now() - new Date(item.reviewed_at).getTime() < 7 * 86400000).length
+  const nextCards = cards.filter((card) => !masteredIds.includes(card.id)).sort((a, b) => (a.difficulty || 1) - (b.difficulty || 1)).slice(0, 3)
+  const learnedCategories = new Set(cards.filter((card) => masteredIds.includes(card.id)).map((card) => card.category))
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif pt-24 pb-20">
@@ -140,6 +153,10 @@ export default function LearnPage() {
             翻转卡片，掌握调酒知识。从入门到高级，像刷单词一样刷鸡尾酒。
           </p>
         </motion.div>
+
+        {user && <div className="mb-8 grid gap-3 sm:grid-cols-5"><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Flame size={16} className="mb-2 text-orange-400" /><p className="text-xl font-semibold">{streak} 天</p><p className="text-xs text-[var(--color-text-muted)]">连续学习</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Layers3 size={16} className="mb-2 text-[var(--color-accent)]" /><p className="text-xl font-semibold">{level}</p><p className="text-xs text-[var(--color-text-muted)]">当前等级</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><BarChart3 size={16} className="mb-2 text-emerald-400" /><p className="text-xl font-semibold">{weeklyCount}</p><p className="text-xs text-[var(--color-text-muted)]">本周复习</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Trophy size={16} className="mb-2 text-yellow-400" /><p className="text-xl font-semibold">{stats.mastered}/{stats.total}</p><p className="text-xs text-[var(--color-text-muted)]">已掌握卡片</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><p className="mb-2 text-sm text-[var(--color-accent)]">{learnedCategories.size}</p><p className="text-xl font-semibold">{learnedCategories.size}/7</p><p className="text-xs text-[var(--color-text-muted)]">已学知识分类</p></div></div>}
+
+        {user && <div className="mb-8 border-b border-[var(--color-border)] pb-8"><div className="mb-3 flex items-center justify-between"><div><p className="text-xs tracking-[0.2em] text-[var(--color-accent)]">NEXT UP</p><h2 className="mt-1 font-serif text-xl">推荐下一组卡片</h2></div><span className="text-xs text-[var(--color-text-muted)]">从简单内容开始</span></div><div className="grid gap-3 md:grid-cols-3">{nextCards.map((card) => <button key={card.id} type="button" onClick={() => setCategory(card.category)} className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4 text-left hover:border-[var(--color-accent)]"><span className="line-clamp-2 text-sm text-[var(--color-text-gray)]">{card.question}</span><ArrowRight size={14} className="shrink-0 text-[var(--color-accent)]" /></button>)}</div></div>}
 
         {/* Stats bar */}
         <motion.div

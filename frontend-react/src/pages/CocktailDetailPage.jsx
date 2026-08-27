@@ -183,7 +183,7 @@ export default function CocktailDetailPage() {
       {/* Hero 大图 */}
       <div className="w-full h-[55vh] bg-[var(--color-accent-dim)] border-b border-[var(--color-border)] overflow-hidden">
         <img
-          src={cocktailHeroImg(cocktail.eng)}
+          src={cocktail.image_url || cocktailHeroImg(cocktail.eng)}
           alt={cocktail.eng}
           className="w-full h-full object-cover"
         />

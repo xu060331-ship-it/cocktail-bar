@@ -22,7 +22,18 @@ export async function fetchAPI(path, opts = {}) {
   } finally {
     clearTimeout(timeout)
   }
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  if (!res.ok) {
+    let detail = ""
+    try {
+      const payload = await res.json()
+      detail = payload.error || payload.message || ""
+    } catch (_) {
+      // Some proxy errors return HTML or an empty response.
+    }
+    const error = new Error(detail || `API error: ${res.status}`)
+    error.status = res.status
+    throw error
+  }
   return res.json()
 }
 

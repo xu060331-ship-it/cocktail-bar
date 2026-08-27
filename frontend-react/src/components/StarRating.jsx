@@ -15,6 +15,7 @@ export default function StarRating({ cocktailEng }) {
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [feedback, setFeedback] = useState("")
+  const report = async (id) => { const reason = window.prompt("举报原因（广告、违规、无关内容等）"); if (!reason) return; try { await fetchAPI("/api/reports", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, body: { target_type: "comment", target_id: id, reason } }); setFeedback("举报已提交") } catch (_) { setFeedback("举报提交失败") } }
 
   const loadRatings = () => {
     const token = localStorage.getItem("token")
@@ -183,7 +184,7 @@ export default function StarRating({ cocktailEng }) {
       {/* Reviews list */}
       {reviews.length > 0 && (
         <div className="space-y-3">
-          <p className="text-xs text-[var(--color-accent)] tracking-wide">品鉴记录</p>
+          <p className="text-xs text-[var(--color-accent)] tracking-wide">公开品鉴 · {reviews.length} 条</p>
           {reviews.slice(0, 10).map((review, i) => (
             <motion.div
               key={review.id}
@@ -200,8 +201,9 @@ export default function StarRating({ cocktailEng }) {
                     {renderStars(review.rating, 11)}
                   </div>
                 </div>
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+                <span className="flex items-center gap-2 text-[10px] text-[var(--color-text-muted)]">
                   {new Date(review.created_at).toLocaleDateString("zh-CN")}
+                  {user && <button type="button" onClick={() => report(review.id)} className="hover:text-red-400">举报</button>}
                 </span>
               </div>
               {review.comment && (

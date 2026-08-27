@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from "react-router-dom"
 import { useEffect } from "react"
-import { AuthProvider } from "./lib/auth"
+import { AuthProvider, useAuth } from "./lib/auth"
 import Navbar from "./components/Navbar"
 import HomePage from "./pages/HomePage"
 import CocktailsPage from "./pages/CocktailsPage"
@@ -24,14 +24,26 @@ import TasteTestPage from "./pages/TasteTestPage"
 import GettingStartedPage from "./pages/GettingStartedPage"
 import MakingLogsPage from "./pages/MakingLogsPage"
 import MobileBottomNav from "./components/MobileBottomNav"
+import AdminPage from "./pages/AdminPage"
+import SubmitContentPage from "./pages/SubmitContentPage"
+import CommunityPage from "./pages/CommunityPage"
+import AdminImagesPage from "./pages/AdminImagesPage"
+import MySubmissionsPage from "./pages/MySubmissionsPage"
+import AdminReportsPage from "./pages/AdminReportsPage"
+import NotificationsPage from "./pages/NotificationsPage"
 
 function Layout() {
+  const { loading: authLoading } = useAuth()
   const location = useLocation()
   const isHome = location.pathname === "/"
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" })
   }, [location.pathname, location.search])
+
+  if (authLoading) {
+    return <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg-page)] font-ui text-sm text-[var(--color-text-muted)]">正在恢复登录状态...</div>
+  }
 
   return (
     <div className="bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif min-h-screen">
@@ -63,12 +75,20 @@ export default function App() {
           <Route path="/profile/:section" element={<ProfilePage />} />
           <Route path="/making-logs" element={<MakingLogsPage />} />
           <Route path="/playlist/:id" element={<PlaylistDetailPage />} />
+          <Route path="/playlist/share/:token" element={<PlaylistDetailPage />} />
           <Route path="/popular" element={<PopularPage />} />
           <Route path="/ai-assistant" element={<AIAssistantPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/encyclopedia" element={<EncyclopediaPage />} />
           <Route path="/taste-test" element={<TasteTestPage />} />
           <Route path="/getting-started" element={<GettingStartedPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/submit" element={<SubmitContentPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/admin/images" element={<AdminImagesPage />} />
+          <Route path="/submissions" element={<MySubmissionsPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

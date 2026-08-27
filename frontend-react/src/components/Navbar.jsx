@@ -12,6 +12,7 @@ const navGroups = [
       { to: "/cocktails", label: "酒谱" },
       { to: "/spirits", label: "基酒" },
       { to: "/daily", label: "每日推荐" },
+      { to: "/community", label: "社区内容" },
       { to: "/popular", label: "热门排行" },
     ],
   },
@@ -41,6 +42,9 @@ const navGroups = [
       { to: "/profile/playlists", label: "我的酒单" },
       { to: "/profile/notes", label: "我的笔记" },
       { to: "/making-logs", label: "调酒记录" },
+      { to: "/submit", label: "投稿中心" },
+      { to: "/submissions", label: "我的投稿" },
+      { to: "/notifications", label: "通知中心" },
     ],
   },
 ]

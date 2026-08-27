@@ -39,6 +39,7 @@ const occasions = [
 
 // 口味选项
 const tasteOptions = ["清爽", "果香", "酸甜", "甜味", "苦味", "奶油", "烈", "草本", "辛辣"]
+const restrictionOptions = ["不含乳制品", "不含蛋清", "不含坚果", "不含咖啡因", "低酒精"]
 
 function MessageBubble({ msg }) {
   const isUser = msg.role === "user"
@@ -106,6 +107,7 @@ export default function AIAssistantPage() {
   const [selectedTastes, setSelectedTastes] = useState([])
   const [barIngredients, setBarIngredients] = useState([])
   const [nonAlcoholic, setNonAlcoholic] = useState(false)
+  const [restrictions, setRestrictions] = useState([])
   const [recommendLoading, setRecommendLoading] = useState(false)
   const [recommendResult, setRecommendResult] = useState(null)
 
@@ -217,6 +219,7 @@ export default function AIAssistantPage() {
           mood: selectedMood || undefined,
           occasion: selectedOccasion || undefined,
           condition: condition || undefined,
+          restrictions: restrictions.length ? restrictions : undefined,
           tastePrefs: selectedTastes.length > 0 ? selectedTastes : undefined,
           availableIngredients: barIngredients.length > 0 ? barIngredients : undefined,
           nonAlcoholic,
@@ -479,6 +482,8 @@ export default function AIAssistantPage() {
               </div>
 
               {/* 无酒精 */}
+              <div className="mb-5"><p className="mb-2.5 text-xs text-[var(--color-text-muted)]">忌口与限制</p><div className="flex flex-wrap gap-2">{restrictionOptions.map((item) => <button type="button" key={item} onClick={() => setRestrictions((prev) => prev.includes(item) ? prev.filter((x) => x !== item) : [...prev, item])} className={`rounded-full border px-3 py-1.5 text-[10px] transition-all ${restrictions.includes(item) ? "border-[var(--color-accent)] bg-[var(--color-accent-dim)] text-[var(--color-accent)]" : "border-[var(--color-border)] bg-[var(--color-bg-page)] text-[var(--color-text-gray)]"}`}>{item}</button>)}</div></div>
+              {/* 无酒精 */}
               <div className="mb-5">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -575,6 +580,7 @@ export default function AIAssistantPage() {
                                     {rec.aiReason && (
                                       <p className="text-[10px] text-[var(--color-text-gray)] mt-1 line-clamp-2">{rec.aiReason}</p>
                                     )}
+                                    {rec.validation && <div className="mt-2 space-y-0.5 text-[10px] text-[var(--color-text-muted)]"><p className={rec.validation.missingIngredients?.length ? "text-amber-400" : "text-emerald-400"}>{rec.validation.missingIngredients?.length ? `缺少：${rec.validation.missingIngredients.join("、")}` : "材料齐全"}</p><p>{rec.validation.alcohol}</p><p>{rec.validation.balance}</p>{rec.validation.restrictions?.length > 0 && <p className="text-red-400">可能包含忌口：{rec.validation.restrictions.join("、")}</p>}<p>{rec.validation.suitable}</p></div>}
                                   </div>
                                 </Link>
                               ))}

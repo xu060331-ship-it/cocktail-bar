@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const token = localStorage.getItem("token")
   const auth = (method, body) => ({ method, headers: { Authorization: `Bearer ${token}` }, body })
 
-  const validSections = ["favorites", "history", "bar", "playlists", "notes"]
+  const validSections = ["favorites", "history", "bar", "playlists", "notes", "submissions"]
   const initialTab = validSections.includes(section) ? section : "favorites"
   const [activeTab, setActiveTab] = useState(initialTab)
   const [loading, setLoading] = useState(true)
@@ -40,6 +40,7 @@ export default function ProfilePage() {
   })
   const [playlists, setPlaylists] = useState([])
   const [notes, setNotes] = useState([])
+  const [submissions, setSubmissions] = useState([])
   // 吧台匹配
   const [matchResult, setMatchResult] = useState(null)
   const [matching, setMatching] = useState(false)
@@ -63,9 +64,10 @@ export default function ProfilePage() {
       fetchAPI("/api/bar", auth()),
       fetchAPI("/api/playlists", auth()),
       fetchAPI("/api/notes", auth()),
+      fetchAPI("/api/submissions/mine", auth()).catch(() => []),
     ])
-      .then(([fav, hist, bar, pls, nts]) => {
-        setFavorites(fav); setHistory(hist); setBarIngs(bar); setPlaylists(pls); setNotes(nts)
+      .then(([fav, hist, bar, pls, nts, subs]) => {
+        setFavorites(fav); setHistory(hist); setBarIngs(bar); setPlaylists(pls); setNotes(nts); setSubmissions(subs)
         setLoading(false)
       })
       .catch((err) => { setError(err.message); setLoading(false) })
@@ -134,6 +136,7 @@ export default function ProfilePage() {
     { key: "bar", label: "我的吧台", icon: GlassWater, count: barIngs.length + barTools.length },
     { key: "playlists", label: "我的酒单", icon: ListPlus, count: playlists.length },
     { key: "notes", label: "调酒笔记", icon: PenLine, count: notes.length },
+    { key: "submissions", label: "我的投稿", icon: PenLine, count: submissions.length },
   ]
 
   const currentData = activeTab === "favorites" ? favorites : activeTab === "history" ? history : []
@@ -272,6 +275,18 @@ export default function ProfilePage() {
                 {matchResult.matchable.length === 0 && matchResult.partial.length === 0 && (
                   <p className="text-xs text-[var(--color-text-muted)]">暂时匹配不到，试试添加更多材料</p>
                 )}
+                {((matchResult.missingIngredients || []).length > 0 || matchResult.partial?.some((c) => c.missing_ingredients?.length)) && (
+                  <div className="border-t border-[var(--color-border)] pt-5">
+                    <p className="text-xs text-[var(--color-accent)] mb-3">购买优先级</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {(matchResult.missingIngredients?.length ? matchResult.missingIngredients : Object.values((matchResult.partial || []).flatMap((c) => c.missing_ingredients || []).reduce((all, name) => { all[name] = { name, count: (all[name]?.count || 0) + 1, type: "待分类" }; return all }, {})).sort((a, b) => b.count - a.count)).slice(0, 8).map((item, index) => (
+                        <button key={item.name} type="button" onClick={() => addBarIngredient(item.name)} className="flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-2 text-left text-xs hover:border-[var(--color-accent)]">
+                          <span><b className="mr-2 text-[var(--color-accent)]">{index + 1}</b>{item.name}<em className="ml-2 not-italic text-[var(--color-text-muted)]">{item.type}</em></span><span className="text-[var(--color-text-muted)]">{item.count} 款酒需要</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -393,6 +408,12 @@ export default function ProfilePage() {
                 ))}
               </div>
             )}
+          </motion.section>
+        )}
+        {activeTab === "submissions" && (
+          <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="mb-6 flex items-center justify-between"><div><h2 className="text-lg font-serif">我的投稿</h2><p className="mt-2 text-xs text-[var(--color-text-muted)]">查看投稿审核进度和管理员反馈。</p></div><Link to="/submit" className="flex items-center gap-1 text-sm text-[var(--color-accent)]"><Plus size={14} />继续投稿</Link></div>
+            {submissions.length === 0 ? <div className="py-16 text-center text-sm text-[var(--color-text-muted)]">还没有投稿。</div> : <div className="space-y-3">{submissions.map((item) => <article key={item.id} className="border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-ui text-xs text-[var(--color-accent)]">{({ flashcard: "学习卡片", encyclopedia: "百科词条", article: "文章" })[item.content_type]}</p><h3 className="mt-2 font-serif text-lg">{item.title}</h3></div><span className={`font-ui text-xs ${item.status === "approved" ? "text-emerald-400" : item.status === "rejected" ? "text-red-400" : "text-amber-400"}`}>{item.status === "approved" ? "已通过" : item.status === "rejected" ? "已拒绝" : "审核中"}</span></div>{item.status === "rejected" && item.reviewer_note && <p className="mt-4 border-l-2 border-red-400/50 pl-3 font-ui text-sm text-red-300">拒绝原因：{item.reviewer_note}</p>}<p className="mt-3 font-ui text-xs text-[var(--color-text-muted)]">提交于 {new Date(item.created_at).toLocaleDateString("zh-CN")}</p></article>)}</div>}
           </motion.section>
         )}
       </div>

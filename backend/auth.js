@@ -21,6 +21,13 @@ function authMiddleware(req, res, next) {
   }
 }
 
+function adminMiddleware(req, res, next) {
+  authMiddleware(req, res, () => {
+    if (!process.env.ADMIN_EMAIL || req.user.email !== process.env.ADMIN_EMAIL) return res.status(403).json({ error: "没有管理权限" })
+    next()
+  })
+}
+
 // ====== 挂载路由到 app ======
 function mountAuthRoutes(app, db) {
 
@@ -121,4 +128,4 @@ function mountAuthRoutes(app, db) {
   })
 }
 
-module.exports = { mountAuthRoutes, authMiddleware }
+module.exports = { mountAuthRoutes, authMiddleware, adminMiddleware }
