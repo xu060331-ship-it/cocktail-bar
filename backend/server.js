@@ -107,7 +107,7 @@ app.get("/api/community", async (_, res) => {
     const [content, approvedSubmissions, articles, logs] = await Promise.all([
       db.query("SELECT p.id, p.content_type, p.title, p.summary, p.content, p.created_at, u.id AS author_id, COALESCE(u.nickname, '社区贡献者') AS author_name, (SELECT COUNT(*)::int FROM community_likes l WHERE l.content_id=CAST(p.id AS varchar)) AS like_count, (SELECT COUNT(*)::int FROM community_comments c WHERE c.content_id=CAST(p.id AS varchar) AND c.is_hidden=FALSE) AS comment_count FROM published_community_content p LEFT JOIN content_submissions s ON s.id=p.submission_id LEFT JOIN users u ON u.id=s.user_id ORDER BY p.created_at DESC LIMIT 60"),
       db.query("SELECT CONCAT('submission_', s.id) AS id, s.content_type, s.title, s.summary, s.content, s.created_at, u.id AS author_id, COALESCE(u.nickname, '社区贡献者') AS author_name, (SELECT COUNT(*)::int FROM community_likes l WHERE l.content_id=CONCAT('submission_', s.id)) AS like_count, (SELECT COUNT(*)::int FROM community_comments c WHERE c.content_id=CONCAT('submission_', s.id) AND c.is_hidden=FALSE) AS comment_count FROM content_submissions s LEFT JOIN users u ON u.id=s.user_id WHERE s.status='approved' AND s.content_type IN ('flashcard','encyclopedia') AND NOT EXISTS (SELECT 1 FROM published_community_content p WHERE p.submission_id=s.id) ORDER BY s.created_at DESC LIMIT 60"),
-      db.query("SELECT id, title, summary, body, cat, author AS author_name, NULL::integer AS author_id, created_at FROM articles WHERE COALESCE(review_status, 'published')='published' ORDER BY created_at DESC LIMIT 60"),
+      db.query("SELECT id, title, summary, body, cat, author AS author_name, NULL::integer AS author_id, created_at FROM articles ORDER BY created_at DESC LIMIT 60"),
       db.query("SELECT l.id, l.cocktail_eng, l.made_at, l.brands, l.rating, l.photo_url, l.created_at, c.chn, u.nickname FROM cocktail_making_logs l LEFT JOIN cocktails c ON c.eng=l.cocktail_eng LEFT JOIN users u ON u.id=l.user_id WHERE l.visibility='public' AND l.moderation_status='approved' ORDER BY l.created_at DESC LIMIT 60")
     ])
     const articleContent = articles.rows.map((article) => ({ id: `article_${article.id}`, source_id: article.id, content_type: "article", title: article.title, summary: article.summary, content: { body: article.body, category: article.cat }, author_name: article.author_name || "调酒百科编辑部", created_at: article.created_at }))
@@ -147,7 +147,7 @@ app.get("/api/community/:id", async (req, res) => {
     const articleId = rawId.startsWith("article_") ? rawId.slice(8) : null
     const submissionId = rawId.startsWith("submission_") ? rawId.slice(11) : null
     const result = articleId
-        ? await db.query("SELECT id, 'article' AS content_type, title, summary, jsonb_build_object('body', body, 'category', cat) AS content, author AS author_name, NULL::integer AS author_id, created_at FROM articles WHERE id=$1 AND COALESCE(review_status, 'published')='published'", [articleId])
+        ? await db.query("SELECT id, 'article' AS content_type, title, summary, jsonb_build_object('body', body, 'category', cat) AS content, author AS author_name, NULL::integer AS author_id, created_at FROM articles WHERE id=$1", [articleId])
       : submissionId
         ? await db.query("SELECT s.id, s.content_type, s.title, s.summary, s.content, u.id AS author_id, u.nickname AS author_name, s.created_at FROM content_submissions s LEFT JOIN users u ON u.id=s.user_id WHERE s.id=$1 AND s.status='approved' AND s.content_type IN ('flashcard','encyclopedia')", [submissionId])
         : await db.query("SELECT p.id, p.content_type, p.title, p.summary, p.content, u.id AS author_id, u.nickname AS author_name, p.created_at FROM published_community_content p LEFT JOIN content_submissions s ON s.id=p.submission_id LEFT JOIN users u ON u.id=s.user_id WHERE p.id=$1", [req.params.id])
@@ -182,7 +182,7 @@ app.get("/api/community/popular", async (_, res) => {
         AND NOT EXISTS (SELECT 1 FROM published_community_content p WHERE p.submission_id=s.id)
       UNION ALL
       SELECT CONCAT('article_', a.id), 'article', a.title, a.summary, a.created_at
-      FROM articles a WHERE COALESCE(a.review_status, 'published')='published'
+      FROM articles a
     )
     SELECT pc.*, COALESCE(l.likes,0)::int AS like_count, COALESCE(c.comments,0)::int AS comment_count
     FROM public_content pc

@@ -12,7 +12,7 @@ async function main() {
   const sources = []
   const cocktails = await db.query("SELECT eng, chn, cat, ingredients, story, method, taste_tags, difficulty, occasion, tip FROM cocktails ORDER BY id")
   for (const row of cocktails.rows) sources.push({ type: "cocktail", id: row.eng, title: row.chn || row.eng, content: makeDocument(row.chn || row.eng, text(row)) })
-  const articles = await db.query("SELECT id, title, summary, body, cat FROM articles WHERE COALESCE(review_status, 'published')='published'")
+  const articles = await db.query("SELECT id, title, summary, body, cat FROM articles")
   for (const row of articles.rows) sources.push({ type: "article", id: String(row.id), title: row.title, content: makeDocument(row.title, `${row.summary || ""}\n${row.body || ""}`) })
   const community = await db.query("SELECT id, content_type, title, summary, content FROM published_community_content")
   for (const row of community.rows) sources.push({ type: row.content_type, id: String(row.id), title: row.title, content: makeDocument(row.title, `${row.summary || ""}\n${text(row.content)}`) })
