@@ -36,7 +36,7 @@ export default function RandomPicker() {
         disabled={loading}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[var(--color-accent)] text-[var(--color-bg-page)] px-5 py-3 rounded-full shadow-lg shadow-[var(--color-accent)]/20 hover:brightness-110 transition-all font-bold text-sm"
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex items-center gap-2 rounded-full bg-[var(--color-accent)] px-4 py-3 text-sm font-bold text-[var(--color-bg-page)] shadow-lg shadow-[var(--color-accent)]/20 transition-all hover:brightness-110 sm:bottom-6 sm:right-6 sm:px-5"
       >
         <Shuffle size={16} strokeWidth={2} className={loading ? "animate-spin" : ""} />
         今天喝什么
@@ -61,7 +61,7 @@ export default function RandomPicker() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 60, scale: 0.95 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-full sm:max-w-sm mx-4 mb-6 sm:mb-0 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl"
+              className="relative z-10 mx-4 mb-[calc(5.5rem+env(safe-area-inset-bottom))] w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] shadow-2xl sm:mb-0 sm:max-w-sm"
             >
               {/* 图片 */}
               <div className="h-48 bg-[var(--color-accent-dim)] overflow-hidden">

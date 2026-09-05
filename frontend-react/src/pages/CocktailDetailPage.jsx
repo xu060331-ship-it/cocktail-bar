@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useLocation, useParams, Link } from "react-router-dom"
 import { cocktailHeroImg } from "../lib/images"
 import { fetchAPI } from "../lib/api"
 import { useAuth } from "../lib/auth"
@@ -13,6 +13,7 @@ import { ArrowLeft, Clock, GlassWater, Heart, Copy, Check, Share2, ListPlus, Plu
 
 export default function CocktailDetailPage() {
   const { name } = useParams()
+  const location = useLocation()
   const { user } = useAuth()
   const [cocktail, setCocktail] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -29,6 +30,8 @@ export default function CocktailDetailPage() {
   const [noteLoading, setNoteLoading] = useState(false)
   const [showMakingLog, setShowMakingLog] = useState(false)
   const [favoriteFeedback, setFavoriteFeedback] = useState("")
+  const returnPath = location.state?.from || "/cocktails"
+  const returnLabel = location.state?.from ? "返回上页" : "返回酒谱"
 
   // 获取用户酒单
   useEffect(() => {
@@ -161,7 +164,7 @@ export default function CocktailDetailPage() {
       <div className="min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-main)] font-serif flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl mb-4">未找到该鸡尾酒</p>
-          <Link to="/cocktails" className="text-[var(--color-accent)] hover:underline">返回酒谱</Link>
+          <Link to={returnPath} className="text-[var(--color-accent)] hover:underline">{returnLabel}</Link>
         </div>
       </div>
     )
@@ -172,11 +175,11 @@ export default function CocktailDetailPage() {
       {/* 返回按钮 */}
       <div className="fixed top-20 left-6 z-40">
         <Link
-          to="/cocktails"
+          to={returnPath}
           className="flex items-center gap-2 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-accent)] transition-colors bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full px-4 py-2"
         >
           <ArrowLeft size={16} strokeWidth={1.5} />
-          返回酒谱
+          {returnLabel}
         </Link>
       </div>
 
@@ -484,7 +487,8 @@ export default function CocktailDetailPage() {
               {related.map((c) => (
                 <Link
                   key={c.eng}
-                  to={`/cocktails/${encodeURIComponent(c.eng)}`}
+                                  state={{ from: `${location.pathname}${location.search}` }}
+                                  to={`/cocktails/${encodeURIComponent(c.eng)}`}
                   className="group bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl overflow-hidden hover:border-[var(--color-accent)] transition-all"
                 >
                   <div className="aspect-square bg-[var(--color-accent-dim)] overflow-hidden">

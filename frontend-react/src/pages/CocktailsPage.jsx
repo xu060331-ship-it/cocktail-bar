@@ -139,8 +139,8 @@ export default function CocktailsPage() {
         </motion.div>
 
         {/* 搜索 + 筛选 */}
-        <div className="flex flex-wrap items-center gap-4 mb-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)]/45 p-3">
-          <div className="relative flex-1 min-w-[220px] max-w-sm">
+        <div className="mb-10 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)]/45 p-3">
+          <div className="relative w-full max-w-sm">
             <Search size={16} strokeWidth={1.5} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
             <input
               type="text"
@@ -156,7 +156,7 @@ export default function CocktailsPage() {
             )}
           </div>
 
-          <div className="flex gap-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full p-1">
+          <div className="mobile-scroll-row mt-3 flex gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-1">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -170,7 +170,7 @@ export default function CocktailsPage() {
             ))}
           </div>
 
-          <div className="flex gap-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-full p-1">
+          <div className="mobile-scroll-row mt-3 flex gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] p-1">
             {spiritFilters.map((s) => (
               <button
                 key={s}
@@ -186,9 +186,9 @@ export default function CocktailsPage() {
         </div>
 
         {/* 口感 + 难度 + 场景 */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="mb-6 flex flex-wrap items-start gap-3">
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">口感</span>
-          <div className="flex gap-1 flex-wrap">
+          <div className="mobile-scroll-row flex flex-1 gap-1 flex-nowrap md:flex-wrap">
             {tasteFilters.map((t) => (
               <button key={t} onClick={() => setActiveTaste(t)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeTaste === t ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {t}
@@ -197,9 +197,9 @@ export default function CocktailsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="mb-6 flex flex-wrap items-start gap-3">
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">难度</span>
-          <div className="flex gap-1">
+          <div className="mobile-scroll-row flex flex-1 gap-1 flex-nowrap md:flex-wrap">
             {difficultyLabels.map((d) => (
               <button key={d} onClick={() => setActiveDifficulty(d)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeDifficulty === d ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {d}
@@ -208,9 +208,9 @@ export default function CocktailsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="mb-6 flex flex-wrap items-start gap-3">
           <span className="text-xs text-[var(--color-text-muted)] shrink-0">场景</span>
-          <div className="flex gap-1 flex-wrap">
+          <div className="mobile-scroll-row flex flex-1 gap-1 flex-nowrap md:flex-wrap">
             {occasionFilters.map((o) => (
               <button key={o} onClick={() => setActiveOccasion(o)} className={`px-3 py-1 rounded-full text-xs transition-all duration-300 ${activeOccasion === o ? "bg-[var(--color-accent)] text-[var(--color-bg-page)] font-semibold" : "text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] bg-[var(--color-bg-card)] border border-[var(--color-border)]"}`}>
                 {o}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import { useAuth } from "../lib/auth"
 import { fetchAPI } from "../lib/api"
 import { cocktailImg } from "../lib/images"
@@ -21,6 +21,7 @@ const COMMON_TOOLS = [
 
 export default function ProfilePage() {
   const { section } = useParams()
+  const location = useLocation()
   const { user, logout } = useAuth()
   const token = localStorage.getItem("token")
   const auth = (method, body) => ({ method, headers: { Authorization: `Bearer ${token}` }, body })
@@ -51,6 +52,24 @@ export default function ProfilePage() {
   const [newPlDesc, setNewPlDesc] = useState("")
   const [creatingPl, setCreatingPl] = useState(false)
   const { madeSet, tastedSet, count: expCount } = useExperience()
+  const cocktailLinkState = { from: `${location.pathname}${location.search}` }
+
+  const barStorageKey = user ? `barIngredients:${user.id || user.email}` : ""
+
+  function readCachedBar() {
+    if (!barStorageKey) return []
+    try {
+      const cached = JSON.parse(localStorage.getItem(barStorageKey) || "[]")
+      return Array.isArray(cached) ? cached : []
+    } catch (_) {
+      return []
+    }
+  }
+
+  function cacheBar(items) {
+    if (!barStorageKey) return
+    localStorage.setItem(barStorageKey, JSON.stringify([...new Set(items)].sort()))
+  }
 
   useEffect(() => {
     if (validSections.includes(section)) setActiveTab(section)
@@ -58,6 +77,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
+    const cachedBar = readCachedBar()
+    if (cachedBar.length > 0) setBarIngs(cachedBar)
     Promise.all([
       fetchAPI("/api/favorites", auth()),
       fetchAPI("/api/history", auth()),
@@ -67,7 +88,7 @@ export default function ProfilePage() {
       fetchAPI("/api/submissions/mine", auth()).catch(() => []),
     ])
       .then(([fav, hist, bar, pls, nts, subs]) => {
-        setFavorites(fav); setHistory(hist); setBarIngs(bar); setPlaylists(pls); setNotes(nts); setSubmissions(subs)
+        setFavorites(fav); setHistory(hist); setBarIngs(bar); cacheBar(bar); setPlaylists(pls); setNotes(nts); setSubmissions(subs)
         setLoading(false)
       })
       .catch((err) => { setError(err.message); setLoading(false) })
@@ -76,14 +97,18 @@ export default function ProfilePage() {
   // 添加吧台材料
   async function addBarIngredient(ing) {
     await fetchAPI("/api/bar", auth("POST", { ingredient: ing }))
-    setBarIngs([...barIngs, ing].sort())
+    const next = [...new Set([...barIngs, ing])].sort()
+    setBarIngs(next)
+    cacheBar(next)
     setAddIng("")
   }
 
   // 删除吧台材料
   async function removeBarIngredient(ing) {
     await fetchAPI("/api/bar", auth("DELETE", { ingredient: ing }))
-    setBarIngs(barIngs.filter(i => i !== ing))
+    const next = barIngs.filter(i => i !== ing)
+    setBarIngs(next)
+    cacheBar(next)
   }
 
   // 匹配能做的酒
@@ -146,13 +171,13 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-5">
         {/* 用户信息 */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <div className="flex items-center justify-between mb-8">
-            <div>
+          <div className="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs tracking-[0.3em] text-[var(--color-accent)] mb-3">MY PROFILE</p>
-              <h1 className="text-4xl text-[var(--color-text-main)] font-serif">{user.nickname || "调酒爱好者"}</h1>
-              <p className="text-sm text-[var(--color-text-muted)] mt-2">{user.email}</p>
+              <h1 className="text-3xl text-[var(--color-text-main)] font-serif sm:text-4xl">{user.nickname || "调酒爱好者"}</h1>
+              <p className="mt-2 break-all text-sm text-[var(--color-text-muted)]">{user.email}</p>
             </div>
-            <button onClick={logout} className="flex items-center gap-1.5 text-sm text-[var(--color-text-gray)] hover:text-[var(--color-text-main)] transition-colors border border-[var(--color-border)] rounded-full px-4 py-2">
+            <button onClick={logout} className="flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-gray)] transition-colors hover:text-[var(--color-text-main)]">
               <LogOut size={14} strokeWidth={1.5} /> 退出登录
             </button>
           </div>
@@ -201,7 +226,7 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 {currentData.map((c, i) => (
                   <motion.div key={c.eng} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-                    <Link to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 hover:border-[var(--color-accent)] transition-all group">
+                    <Link state={cocktailLinkState} to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 hover:border-[var(--color-accent)] transition-all group">
                       <div className="w-14 h-14 rounded-lg bg-[var(--color-accent-dim)] overflow-hidden shrink-0">
                         <img src={cocktailImg(c.eng)} alt={c.eng} className="w-full h-full object-cover" />
                       </div>
@@ -249,7 +274,7 @@ export default function ProfilePage() {
                     <p className="text-xs text-green-400 mb-3">✅ 完全能做 ({matchResult.matchable.length} 款)</p>
                     <div className="space-y-2">
                       {matchResult.matchable.map((c, i) => (
-                        <Link key={c.eng} to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-3 bg-[var(--color-bg-card)] border border-green-500/20 rounded-xl p-3 hover:border-[var(--color-accent)] transition-all group">
+                        <Link key={c.eng} state={cocktailLinkState} to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-3 bg-[var(--color-bg-card)] border border-green-500/20 rounded-xl p-3 hover:border-[var(--color-accent)] transition-all group">
                           <div className="w-10 h-10 rounded-lg bg-[var(--color-accent-dim)] overflow-hidden shrink-0"><img src={cocktailImg(c.eng)} alt={c.eng} className="w-full h-full object-cover" /></div>
                           <div className="flex-1 min-w-0"><p className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">{c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}</p></div>
                           <ArrowRight size={14} strokeWidth={1.5} className="text-[var(--color-text-muted)]" />
@@ -263,7 +288,7 @@ export default function ProfilePage() {
                     <p className="text-xs text-amber-400 mb-3">⚠ 差一样材料 ({matchResult.partial.length} 款)</p>
                     <div className="space-y-2">
                       {matchResult.partial.map((c, i) => (
-                        <Link key={c.eng} to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-3 bg-[var(--color-bg-card)] border border-amber-500/20 rounded-xl p-3 hover:border-[var(--color-accent)] transition-all group">
+                        <Link key={c.eng} state={cocktailLinkState} to={`/cocktails/${encodeURIComponent(c.eng)}`} className="flex items-center gap-3 bg-[var(--color-bg-card)] border border-amber-500/20 rounded-xl p-3 hover:border-[var(--color-accent)] transition-all group">
                           <div className="w-10 h-10 rounded-lg bg-[var(--color-accent-dim)] overflow-hidden shrink-0"><img src={cocktailImg(c.eng)} alt={c.eng} className="w-full h-full object-cover" /></div>
                           <div className="flex-1 min-w-0"><p className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">{c.chn?.replace(/[（(][^）)]*[）)]/g, "").trim() || c.eng}</p></div>
                           <ArrowRight size={14} strokeWidth={1.5} className="text-[var(--color-text-muted)]" />
@@ -394,7 +419,7 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 {notes.map((n, i) => (
                   <motion.div key={n.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-                    <Link to={`/cocktails/${encodeURIComponent(n.cocktail_eng)}`}
+                    <Link state={cocktailLinkState} to={`/cocktails/${encodeURIComponent(n.cocktail_eng)}`}
                       className="block bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5 hover:border-[var(--color-accent)] transition-all group">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm text-[var(--color-text-main)] font-serif group-hover:text-[var(--color-accent)] transition-colors">

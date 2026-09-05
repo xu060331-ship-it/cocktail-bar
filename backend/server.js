@@ -6,8 +6,9 @@ const multer = require("multer")
 const fs = require("fs")
 const path = require("path")
 const crypto = require("crypto")
+const jwt = require("jsonwebtoken")
 const { mountAuthRoutes, authMiddleware, adminMiddleware } = require("./auth")
-const { AI_ENABLED, XIAOJIU_SYSTEM_PROMPT, callAIWithRetry, callAIStream, extractJSON, validateCitations, ruleBasedRecommend, fallbackChatReply, generateCocktailEnhancementPrompt, generateRecommendationPrompt } = require("./ai")
+const { AI_ENABLED, XIAOJIU_SYSTEM_PROMPT, callAIWithRetry, callAIStream, createEmbedding, extractJSON, validateCitations, ruleBasedRecommend, fallbackChatReply, generateCocktailEnhancementPrompt, generateRecommendationPrompt } = require("./ai")
 const { getPersona, listPersonas } = require("./ai-personas")
 const { STATIC_CARDS, generateCocktailCards } = require("./flashcards")
 const { listCategories, getCategory, searchEntries } = require("./encyclopedia")
@@ -94,25 +95,152 @@ app.get("/api/notifications", authMiddleware, async (req, res) => {
 app.patch("/api/notifications/read", authMiddleware, async (req, res) => {
   try { await db.query("UPDATE notifications SET is_read=TRUE WHERE user_id=$1", [req.user.id]); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "更新通知失败" }) }
 })
+app.get("/api/checkins", authMiddleware, async (req, res) => {
+  try { const result = await db.query("SELECT checkin_date FROM user_checkins WHERE user_id=$1 ORDER BY checkin_date DESC LIMIT 120", [req.user.id]); const dates = result.rows.map((r) => String(r.checkin_date).slice(0, 10)); let streak = 0; for (let i = 0; i < dates.length; i++) { const expected = new Date(); expected.setDate(expected.getDate() - i); if (dates[i] !== expected.toISOString().slice(0, 10)) break; streak++ } res.json({ checkedInToday: dates.includes(new Date().toISOString().slice(0, 10)), dates, streak }) } catch (_) { res.status(500).json({ error: "读取打卡记录失败" }) }
+})
+app.post("/api/checkins", authMiddleware, async (req, res) => {
+  try { await db.query("INSERT INTO user_checkins (user_id) VALUES ($1) ON CONFLICT (user_id, checkin_date) DO NOTHING", [req.user.id]); const result = await db.query("SELECT checkin_date FROM user_checkins WHERE user_id=$1 ORDER BY checkin_date DESC LIMIT 120", [req.user.id]); const dates = result.rows.map((r) => String(r.checkin_date).slice(0, 10)); let streak = 0; for (let i = 0; i < dates.length; i++) { const expected = new Date(); expected.setDate(expected.getDate() - i); if (dates[i] !== expected.toISOString().slice(0, 10)) break; streak++ } res.json({ checkedInToday: true, streak }) } catch (_) { res.status(500).json({ error: "打卡失败" }) }
+})
 
 app.get("/api/community", async (_, res) => {
   try {
-    const [content, logs] = await Promise.all([
-      db.query("SELECT id, content_type, title, summary, content, created_at FROM published_community_content ORDER BY created_at DESC LIMIT 60"),
+    const [content, approvedSubmissions, articles, logs] = await Promise.all([
+      db.query("SELECT p.id, p.content_type, p.title, p.summary, p.content, p.created_at, u.id AS author_id, COALESCE(u.nickname, '社区贡献者') AS author_name, (SELECT COUNT(*)::int FROM community_likes l WHERE l.content_id=CAST(p.id AS varchar)) AS like_count, (SELECT COUNT(*)::int FROM community_comments c WHERE c.content_id=CAST(p.id AS varchar) AND c.is_hidden=FALSE) AS comment_count FROM published_community_content p LEFT JOIN content_submissions s ON s.id=p.submission_id LEFT JOIN users u ON u.id=s.user_id ORDER BY p.created_at DESC LIMIT 60"),
+      db.query("SELECT CONCAT('submission_', s.id) AS id, s.content_type, s.title, s.summary, s.content, s.created_at, u.id AS author_id, COALESCE(u.nickname, '社区贡献者') AS author_name, (SELECT COUNT(*)::int FROM community_likes l WHERE l.content_id=CONCAT('submission_', s.id)) AS like_count, (SELECT COUNT(*)::int FROM community_comments c WHERE c.content_id=CONCAT('submission_', s.id) AND c.is_hidden=FALSE) AS comment_count FROM content_submissions s LEFT JOIN users u ON u.id=s.user_id WHERE s.status='approved' AND s.content_type IN ('flashcard','encyclopedia') AND NOT EXISTS (SELECT 1 FROM published_community_content p WHERE p.submission_id=s.id) ORDER BY s.created_at DESC LIMIT 60"),
+      db.query("SELECT id, title, summary, body, cat, author AS author_name, NULL::integer AS author_id, created_at FROM articles WHERE COALESCE(review_status, 'published')='published' ORDER BY created_at DESC LIMIT 60"),
       db.query("SELECT l.id, l.cocktail_eng, l.made_at, l.brands, l.rating, l.photo_url, l.created_at, c.chn, u.nickname FROM cocktail_making_logs l LEFT JOIN cocktails c ON c.eng=l.cocktail_eng LEFT JOIN users u ON u.id=l.user_id WHERE l.visibility='public' AND l.moderation_status='approved' ORDER BY l.created_at DESC LIMIT 60")
     ])
-    res.json({ content: content.rows, logs: logs.rows })
+    const articleContent = articles.rows.map((article) => ({ id: `article_${article.id}`, source_id: article.id, content_type: "article", title: article.title, summary: article.summary, content: { body: article.body, category: article.cat }, author_name: article.author_name || "调酒百科编辑部", created_at: article.created_at }))
+    const missingPublished = approvedSubmissions.rows.map((submission) => ({ ...submission, id: `submission_${submission.id}`, source_id: submission.id, source: "approved_submission" }))
+    res.json({ content: [...content.rows, ...missingPublished, ...articleContent], logs: logs.rows })
   } catch (_) { res.status(500).json({ error: "社区内容加载失败" }) }
+})
+
+app.post("/api/knowledge/search", async (req, res) => {
+  const query = String(req.body?.query || "").trim()
+  if (!query || query.length > 500) return res.status(400).json({ error: "搜索内容不能为空且不能超过 500 字" })
+  try {
+    const embedding = await createEmbedding(query)
+    const vector = `[${embedding.join(",")}]`
+    const result = await db.query("SELECT source_type, source_id, title, content, metadata, 1 - (embedding <=> $1::vector) AS similarity FROM knowledge_chunks WHERE embedding IS NOT NULL ORDER BY embedding <=> $1::vector LIMIT 6", [vector])
+    res.json({ query, sources: result.rows })
+  } catch (err) { res.status(503).json({ error: `知识库检索失败: ${err.message}` }) }
+})
+
+app.get("/api/community/authors/:id", async (req, res) => {
+  try {
+    const user = await db.query("SELECT id, nickname, created_at FROM users WHERE id=$1", [req.params.id])
+    if (!user.rows.length) return res.status(404).json({ error: "作者不存在" })
+    const [submissions, logs, likes, comments] = await Promise.all([
+      db.query("SELECT id, content_type, title, summary, created_at FROM content_submissions WHERE user_id=$1 AND status='approved' ORDER BY created_at DESC", [req.params.id]),
+      db.query("SELECT l.id, l.cocktail_eng, l.made_at, l.rating, c.chn FROM cocktail_making_logs l LEFT JOIN cocktails c ON c.eng=l.cocktail_eng WHERE l.user_id=$1 AND l.visibility='public' AND l.moderation_status='approved' ORDER BY l.created_at DESC", [req.params.id]),
+      db.query("SELECT COUNT(*)::int AS count FROM community_likes l JOIN (SELECT id::varchar AS content_id, submission_id FROM published_community_content UNION ALL SELECT CONCAT('submission_', id), id FROM content_submissions WHERE status='approved') p ON p.content_id=l.content_id JOIN content_submissions s ON s.id=p.submission_id WHERE s.user_id=$1", [req.params.id]),
+      db.query("SELECT COUNT(*)::int AS count FROM community_comments c JOIN (SELECT id::varchar AS content_id, submission_id FROM published_community_content UNION ALL SELECT CONCAT('submission_', id), id FROM content_submissions WHERE status='approved') p ON p.content_id=c.content_id JOIN content_submissions s ON s.id=p.submission_id WHERE s.user_id=$1 AND c.is_hidden=FALSE", [req.params.id]),
+    ])
+    res.json({ author: user.rows[0], submissions: submissions.rows, logs: logs.rows, likes: likes.rows[0].count, comments: comments.rows[0].count })
+  } catch (_) { res.status(500).json({ error: "作者主页加载失败" }) }
+})
+
+app.get("/api/community/:id", async (req, res) => {
+  try {
+    const rawId = String(req.params.id)
+    const articleId = rawId.startsWith("article_") ? rawId.slice(8) : null
+    const submissionId = rawId.startsWith("submission_") ? rawId.slice(11) : null
+    const result = articleId
+        ? await db.query("SELECT id, 'article' AS content_type, title, summary, jsonb_build_object('body', body, 'category', cat) AS content, author AS author_name, NULL::integer AS author_id, created_at FROM articles WHERE id=$1 AND COALESCE(review_status, 'published')='published'", [articleId])
+      : submissionId
+        ? await db.query("SELECT s.id, s.content_type, s.title, s.summary, s.content, u.id AS author_id, u.nickname AS author_name, s.created_at FROM content_submissions s LEFT JOIN users u ON u.id=s.user_id WHERE s.id=$1 AND s.status='approved' AND s.content_type IN ('flashcard','encyclopedia')", [submissionId])
+        : await db.query("SELECT p.id, p.content_type, p.title, p.summary, p.content, u.id AS author_id, u.nickname AS author_name, p.created_at FROM published_community_content p LEFT JOIN content_submissions s ON s.id=p.submission_id LEFT JOIN users u ON u.id=s.user_id WHERE p.id=$1", [req.params.id])
+    if (!result.rows.length) return res.status(404).json({ error: "公开内容不存在" })
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "公开内容加载失败" }) }
+})
+
+app.get("/api/community/:id/interactions", async (req, res) => {
+  try {
+    const [likes, favorites, comments] = await Promise.all([
+      db.query("SELECT COUNT(*)::int AS count FROM community_likes WHERE content_id=$1", [req.params.id]),
+      db.query("SELECT COUNT(*)::int AS count FROM community_favorites WHERE content_id=$1", [req.params.id]),
+      db.query("SELECT COUNT(*)::int AS count FROM community_comments WHERE content_id=$1 AND is_hidden=FALSE", [req.params.id]),
+    ])
+    let liked = false; let favorited = false
+    if (req.headers.authorization) {
+      try { const token = req.headers.authorization.split(" ")[1]; const user = jwt.verify(token, jwtSecret); if (user) { liked = !!(await db.query("SELECT 1 FROM community_likes WHERE user_id=$1 AND content_id=$2", [user.id, req.params.id])).rowCount; favorited = !!(await db.query("SELECT 1 FROM community_favorites WHERE user_id=$1 AND content_id=$2", [user.id, req.params.id])).rowCount } } catch (_) {}
+    }
+    res.json({ likes: likes.rows[0].count, favorites: favorites.rows[0].count, comments: comments.rows[0].count, liked, favorited })
+  } catch (_) { res.status(500).json({ error: "互动数据加载失败" }) }
+})
+app.get("/api/community/popular", async (_, res) => {
+  try {
+    const result = await db.query(`WITH public_content AS (
+      SELECT p.id::varchar AS id, p.content_type, p.title, p.summary, p.created_at
+      FROM published_community_content p
+      UNION ALL
+      SELECT CONCAT('submission_', s.id), s.content_type, s.title, s.summary, s.created_at
+      FROM content_submissions s
+      WHERE s.status='approved' AND s.content_type IN ('flashcard','encyclopedia')
+        AND NOT EXISTS (SELECT 1 FROM published_community_content p WHERE p.submission_id=s.id)
+      UNION ALL
+      SELECT CONCAT('article_', a.id), 'article', a.title, a.summary, a.created_at
+      FROM articles a WHERE COALESCE(a.review_status, 'published')='published'
+    )
+    SELECT pc.*, COALESCE(l.likes,0)::int AS like_count, COALESCE(c.comments,0)::int AS comment_count
+    FROM public_content pc
+    LEFT JOIN (SELECT content_id, COUNT(*) AS likes FROM community_likes GROUP BY content_id) l ON l.content_id=pc.id
+    LEFT JOIN (SELECT content_id, COUNT(*) AS comments FROM community_comments WHERE is_hidden=FALSE GROUP BY content_id) c ON c.content_id=pc.id
+    ORDER BY (COALESCE(l.likes,0) + COALESCE(c.comments,0)) DESC, pc.created_at DESC LIMIT 20`)
+    res.json(result.rows)
+  } catch (_) { res.status(500).json({ error: "热门内容加载失败" }) }
+})
+
+app.post("/api/community/:id/like", authMiddleware, async (req, res) => {
+  try {
+    const inserted = await db.query("INSERT INTO community_likes (user_id,content_id) VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING id", [req.user.id, req.params.id])
+    if (inserted.rowCount) {
+      const owner = await db.query("SELECT s.user_id, s.title FROM content_submissions s WHERE s.id=(SELECT submission_id FROM published_community_content WHERE id::varchar=$1 UNION ALL SELECT REPLACE($1,'submission_','')::int WHERE $1 LIKE 'submission_%' LIMIT 1)", [req.params.id])
+      if (owner.rows[0] && owner.rows[0].user_id !== req.user.id) await db.query("INSERT INTO notifications (user_id,type,title,body) VALUES ($1,'community_like','收到新的点赞',$2)", [owner.rows[0].user_id, `你的公开内容《${owner.rows[0].title}》收到新的点赞。`])
+    }
+    res.json({ ok: true })
+  } catch (_) { res.status(500).json({ error: "点赞失败" }) }
+})
+app.delete("/api/community/:id/like", authMiddleware, async (req, res) => {
+  try { await db.query("DELETE FROM community_likes WHERE user_id=$1 AND content_id=$2", [req.user.id, req.params.id]); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "取消点赞失败" }) }
+})
+app.post("/api/community/:id/favorite", authMiddleware, async (req, res) => {
+  try { await db.query("INSERT INTO community_favorites (user_id,content_id) VALUES ($1,$2) ON CONFLICT DO NOTHING", [req.user.id, req.params.id]); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "收藏失败" }) }
+})
+app.delete("/api/community/:id/favorite", authMiddleware, async (req, res) => {
+  try { await db.query("DELETE FROM community_favorites WHERE user_id=$1 AND content_id=$2", [req.user.id, req.params.id]); res.json({ ok: true }) } catch (_) { res.status(500).json({ error: "取消收藏失败" }) }
+})
+app.get("/api/community/favorites", authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query("SELECT f.content_id, COALESCE(p.content_type, s.content_type) AS content_type, COALESCE(p.title, s.title) AS title, COALESCE(p.summary, s.summary) AS summary, f.created_at FROM community_favorites f LEFT JOIN published_community_content p ON p.id::varchar=f.content_id LEFT JOIN content_submissions s ON s.id::varchar=REPLACE(f.content_id, 'submission_', '') WHERE f.user_id=$1 AND (p.id IS NOT NULL OR (s.status='approved' AND s.content_type IN ('flashcard','encyclopedia'))) ORDER BY f.created_at DESC", [req.user.id])
+    res.json(result.rows)
+  } catch (_) { res.status(500).json({ error: "读取社区收藏失败" }) }
+})
+
+app.get("/api/community/:id/comments", async (req, res) => {
+  try { const result = await db.query("SELECT c.id, c.body, c.created_at, u.nickname FROM community_comments c JOIN users u ON u.id=c.user_id WHERE c.content_id=$1 AND c.is_hidden=FALSE ORDER BY c.created_at DESC LIMIT 50", [req.params.id]); res.json(result.rows) } catch (_) { res.status(500).json({ error: "评论加载失败" }) }
+})
+app.post("/api/community/:id/comments", authMiddleware, async (req, res) => {
+  const body = String(req.body?.body || "").trim()
+  if (!body || body.length > 1000) return res.status(400).json({ error: "评论不能为空且不能超过 1000 字" })
+  try {
+    const result = await db.query("INSERT INTO community_comments (user_id,content_id,body) VALUES ($1,$2,$3) RETURNING id, body, created_at", [req.user.id, req.params.id, body])
+    const owner = await db.query("SELECT s.user_id, s.title FROM content_submissions s WHERE s.id=(SELECT submission_id FROM published_community_content WHERE id::varchar=$1 UNION ALL SELECT REPLACE($1,'submission_','')::int WHERE $1 LIKE 'submission_%' LIMIT 1)", [req.params.id])
+    if (owner.rows[0] && owner.rows[0].user_id !== req.user.id) await db.query("INSERT INTO notifications (user_id,type,title,body) VALUES ($1,'community_comment','收到新的评论',$2)", [owner.rows[0].user_id, `有人评论了你的公开内容《${owner.rows[0].title}》。`])
+    res.status(201).json({ ...result.rows[0], nickname: req.user.nickname || "我" })
+  } catch (_) { res.status(500).json({ error: "评论发布失败" }) }
 })
 
 app.post("/api/reports", authMiddleware, async (req, res) => {
   const { target_type, target_id, reason, detail = "" } = req.body || {}
-  if (!["article", "encyclopedia", "flashcard", "making_log", "comment"].includes(target_type) || !target_id || !reason) return res.status(400).json({ error: "举报信息不完整" })
+  if (!["article", "encyclopedia", "flashcard", "making_log", "comment", "community_content", "community_comment"].includes(target_type) || !target_id || !reason) return res.status(400).json({ error: "举报信息不完整" })
   try { await db.query("INSERT INTO content_reports (reporter_id,target_type,target_id,reason,detail) VALUES ($1,$2,$3,$4,$5)", [req.user.id, target_type, String(target_id), reason, detail]); res.status(201).json({ ok: true }) } catch (_) { res.status(500).json({ error: "举报提交失败" }) }
 })
 
 app.get("/api/admin/reports", adminMiddleware, async (_, res) => {
-  try { const result = await db.query("SELECT r.*, u.email, u.nickname FROM content_reports r JOIN users u ON u.id=r.reporter_id ORDER BY r.status='pending' DESC, r.created_at DESC"); res.json(result.rows) } catch (_) { res.status(500).json({ error: "读取举报失败" }) }
+  try { const result = await db.query(`SELECT r.*, u.email AS reporter_email, u.nickname AS reporter_nickname, COALESCE(cr.comment, cc.body) AS target_comment, COALESCE(cu.nickname, ccu.nickname) AS target_author_nickname FROM content_reports r JOIN users u ON u.id=r.reporter_id LEFT JOIN cocktail_ratings cr ON r.target_type='comment' AND cr.id::varchar=r.target_id LEFT JOIN users cu ON cu.id=cr.user_id LEFT JOIN community_comments cc ON r.target_type='community_comment' AND cc.id::varchar=r.target_id LEFT JOIN users ccu ON ccu.id=cc.user_id ORDER BY r.status='pending' DESC, r.created_at DESC`); res.json(result.rows) } catch (_) { res.status(500).json({ error: "读取举报失败" }) }
 })
 
 app.patch("/api/admin/reports/:id", adminMiddleware, async (req, res) => {
@@ -128,6 +256,23 @@ app.delete("/api/admin/comments/:id", adminMiddleware, async (req, res) => {
 app.patch("/api/admin/comments/:id", adminMiddleware, async (req, res) => {
   if (typeof req.body?.is_hidden !== "boolean") return res.status(400).json({ error: "请提供屏蔽状态" })
   try { const result = await db.query("UPDATE cocktail_ratings SET is_hidden=$1, updated_at=NOW() WHERE id=$2 RETURNING id, is_hidden", [req.body.is_hidden, req.params.id]); if (!result.rows.length) return res.status(404).json({ error: "评论不存在" }); res.json(result.rows[0]) } catch (_) { res.status(500).json({ error: "更新评论状态失败" }) }
+})
+
+app.patch("/api/admin/community-comments/:id", adminMiddleware, async (req, res) => {
+  if (typeof req.body?.is_hidden !== "boolean") return res.status(400).json({ error: "请提供屏蔽状态" })
+  try {
+    const result = await db.query("UPDATE community_comments SET is_hidden=$1, updated_at=NOW() WHERE id=$2 RETURNING id, is_hidden", [req.body.is_hidden, req.params.id])
+    if (!result.rows.length) return res.status(404).json({ error: "社区评论不存在" })
+    res.json(result.rows[0])
+  } catch (_) { res.status(500).json({ error: "更新社区评论状态失败" }) }
+})
+
+app.delete("/api/admin/community-comments/:id", adminMiddleware, async (req, res) => {
+  try {
+    const result = await db.query("DELETE FROM community_comments WHERE id=$1 RETURNING id", [req.params.id])
+    if (!result.rows.length) return res.status(404).json({ error: "社区评论不存在" })
+    res.json({ ok: true })
+  } catch (_) { res.status(500).json({ error: "删除社区评论失败" }) }
 })
 
 app.get("/api/admin/content-submissions", adminMiddleware, async (_, res) => {

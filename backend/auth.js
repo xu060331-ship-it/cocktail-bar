@@ -23,7 +23,9 @@ function authMiddleware(req, res, next) {
 
 function adminMiddleware(req, res, next) {
   authMiddleware(req, res, () => {
-    if (!process.env.ADMIN_EMAIL || req.user.email !== process.env.ADMIN_EMAIL) return res.status(403).json({ error: "没有管理权限" })
+    const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase()
+    const userEmail = (req.user.email || "").trim().toLowerCase()
+    if (!adminEmail || userEmail !== adminEmail) return res.status(403).json({ error: "没有管理权限" })
     next()
   })
 }

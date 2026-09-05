@@ -151,6 +151,24 @@ async function callAIWithRetry(messages, options = {}, retries = 2) {
   throw lastError
 }
 
+async function createEmbedding(input, options = {}) {
+  const provider = options.provider || process.env.EMBEDDING_PROVIDER || "qwen"
+  const config = PROVIDERS[provider]
+  if (!config) throw new Error(`未知的 embedding provider: ${provider}`)
+  if (!config.apiKey) throw new Error(`${provider} API key 未配置`)
+  const response = await fetch(`${config.baseURL}/embeddings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${config.apiKey}` },
+    body: JSON.stringify({ model: options.model || process.env.EMBEDDING_MODEL || "text-embedding-v3", input: String(input) }),
+    signal: AbortSignal.timeout(30000),
+  })
+  if (!response.ok) throw new Error(`Embedding API 返回 ${response.status}: ${(await response.text()).slice(0, 200)}`)
+  const data = await response.json()
+  const embedding = data?.data?.[0]?.embedding
+  if (!Array.isArray(embedding) || embedding.length !== 1536) throw new Error(`Embedding 维度异常，期望 1536，实际 ${embedding?.length || 0}`)
+  return embedding
+}
+
 // ====== 流式调用 ======
 
 /**
@@ -665,6 +683,7 @@ module.exports = {
   XIAOJIU_SYSTEM_PROMPT,
   callAI,
   callAIWithRetry,
+  createEmbedding,
   callAIStream,
   extractJSON,
   validateCitations,

@@ -49,6 +49,18 @@ body {
   background-color: var(--color-bg-page);
   color: var(--color-text-main);
   margin: 0;
+  overflow-x: clip;
+}
+
+html { scroll-padding-top: 5rem; }
+
+/* 防止用户内容、邮箱和长英文名称撑破移动端布局 */
+h1, h2, h3, h4, p, a, span, button, label {
+  overflow-wrap: anywhere;
+}
+
+.mobile-safe-bottom {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
 /* 操作界面使用无衬线字体，保留标题和正文的编辑感 */
@@ -72,6 +84,20 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
 
 select {
   min-height: 34px;
+}
+
+@media (max-width: 767px) {
+  body { overflow-x: clip; }
+  main, body > #root { max-width: 100%; }
+  img, video, canvas { max-width: 100%; }
+  input, select, textarea, button { max-width: 100%; }
+  .mobile-scroll-row {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .mobile-scroll-row::-webkit-scrollbar { display: none; }
 }
 
 /* 暖色噪点纹理层 */

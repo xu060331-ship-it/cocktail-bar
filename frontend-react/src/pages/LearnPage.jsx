@@ -26,6 +26,8 @@ export default function LearnPage() {
   const [category, setCategory] = useState("")
   const [stats, setStats] = useState({ total: 0, mastered: 0, reviewed: 0 })
   const [activity, setActivity] = useState([])
+  const [checkedIn, setCheckedIn] = useState(false)
+  const [checkinStreak, setCheckinStreak] = useState(0)
 
   // Load cards
   const loadCards = useCallback(async () => {
@@ -80,6 +82,15 @@ export default function LearnPage() {
       })
       .catch(() => {})
   }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    fetchAPI("/api/checkins", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }).then((data) => { setCheckedIn(data.checkedInToday); setCheckinStreak(data.streak || 0) }).catch(() => {})
+  }, [user])
+
+  async function checkIn() {
+    try { const data = await fetchAPI("/api/checkins", { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }); setCheckedIn(true); setCheckinStreak(data.streak || 1) } catch (_) {}
+  }
 
   const handleMaster = async (cardId) => {
     setSavingId(cardId)
@@ -157,6 +168,10 @@ export default function LearnPage() {
         {user && <div className="mb-8 grid gap-3 sm:grid-cols-5"><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Flame size={16} className="mb-2 text-orange-400" /><p className="text-xl font-semibold">{streak} 天</p><p className="text-xs text-[var(--color-text-muted)]">连续学习</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Layers3 size={16} className="mb-2 text-[var(--color-accent)]" /><p className="text-xl font-semibold">{level}</p><p className="text-xs text-[var(--color-text-muted)]">当前等级</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><BarChart3 size={16} className="mb-2 text-emerald-400" /><p className="text-xl font-semibold">{weeklyCount}</p><p className="text-xs text-[var(--color-text-muted)]">本周复习</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><Trophy size={16} className="mb-2 text-yellow-400" /><p className="text-xl font-semibold">{stats.mastered}/{stats.total}</p><p className="text-xs text-[var(--color-text-muted)]">已掌握卡片</p></div><div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><p className="mb-2 text-sm text-[var(--color-accent)]">{learnedCategories.size}</p><p className="text-xl font-semibold">{learnedCategories.size}/7</p><p className="text-xs text-[var(--color-text-muted)]">已学知识分类</p></div></div>}
 
         {user && <div className="mb-8 border-b border-[var(--color-border)] pb-8"><div className="mb-3 flex items-center justify-between"><div><p className="text-xs tracking-[0.2em] text-[var(--color-accent)]">NEXT UP</p><h2 className="mt-1 font-serif text-xl">推荐下一组卡片</h2></div><span className="text-xs text-[var(--color-text-muted)]">从简单内容开始</span></div><div className="grid gap-3 md:grid-cols-3">{nextCards.map((card) => <button key={card.id} type="button" onClick={() => setCategory(card.category)} className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4 text-left hover:border-[var(--color-accent)]"><span className="line-clamp-2 text-sm text-[var(--color-text-gray)]">{card.question}</span><ArrowRight size={14} className="shrink-0 text-[var(--color-accent)]" /></button>)}</div></div>}
+
+        {user && <div className="mb-8 flex items-center justify-between gap-3 border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4"><div><p className="font-ui text-sm text-[var(--color-text-main)]">每日学习打卡</p><p className="mt-1 font-ui text-xs text-[var(--color-text-muted)]">{checkedIn ? `今日已打卡${checkinStreak ? ` · 连续 ${checkinStreak} 天` : ""}` : "完成一次打卡，保持学习节奏"}</p></div><button type="button" onClick={checkIn} disabled={checkedIn} className="shrink-0 bg-[var(--color-accent)] px-4 py-2 font-ui text-sm text-[var(--color-bg-page)] disabled:opacity-50">{checkedIn ? "已打卡" : "立即打卡"}</button></div>}
+
+        {user && <div className="mb-8 border-b border-[var(--color-border)] pb-8"><div className="mb-3 flex items-center justify-between"><h2 className="font-serif text-xl">学习成就</h2><span className="font-ui text-xs text-[var(--color-text-muted)]">根据你的进度解锁</span></div><div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><div className={`border p-3 font-ui ${checkinStreak > 0 ? "border-[var(--color-accent)] bg-[var(--color-accent-dim)]" : "border-[var(--color-border)] opacity-50"}`}><p className="text-lg">✦</p><p className="mt-1 text-xs">初次打卡</p></div><div className={`border p-3 font-ui ${Math.max(streak, checkinStreak) >= 3 ? "border-[var(--color-accent)] bg-[var(--color-accent-dim)]" : "border-[var(--color-border)] opacity-50"}`}><p className="text-lg">🔥</p><p className="mt-1 text-xs">连续学习 3 天</p></div><div className={`border p-3 font-ui ${stats.mastered >= 10 ? "border-[var(--color-accent)] bg-[var(--color-accent-dim)]" : "border-[var(--color-border)] opacity-50"}`}><p className="text-lg">📚</p><p className="mt-1 text-xs">掌握 10 张卡片</p></div><div className={`border p-3 font-ui ${stats.mastered >= 1 ? "border-[var(--color-accent)] bg-[var(--color-accent-dim)]" : "border-[var(--color-border)] opacity-50"}`}><p className="text-lg">🍸</p><p className="mt-1 text-xs">完成第一次学习</p></div></div></div>}
 
         {/* Stats bar */}
         <motion.div

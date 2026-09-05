@@ -13,6 +13,7 @@ const navGroups = [
       { to: "/spirits", label: "基酒" },
       { to: "/daily", label: "每日推荐" },
       { to: "/community", label: "社区内容" },
+      { to: "/community/popular", label: "社区热榜" },
       { to: "/popular", label: "热门排行" },
     ],
   },
@@ -38,6 +39,7 @@ const navGroups = [
     links: [
       { to: "/profile", label: "个人主页" },
       { to: "/profile/favorites", label: "我的收藏" },
+      { to: "/profile/community-favorites", label: "社区收藏" },
       { to: "/profile/bar", label: "我的酒柜" },
       { to: "/profile/playlists", label: "我的酒单" },
       { to: "/profile/notes", label: "我的笔记" },
@@ -200,7 +202,7 @@ export default function Navbar({ transparent = false }) {
 
         {/* 手机端：下拉菜单 */}
         {menuOpen && (
-          <div className="absolute top-16 left-0 right-0 bg-[var(--color-bg-nav)] border-b border-[var(--color-border)] md:hidden">
+          <div className="absolute left-0 right-0 top-16 max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain bg-[var(--color-bg-nav)] border-b border-[var(--color-border)] md:hidden">
             <nav className="flex flex-col py-4 px-6 gap-3">
               {visibleNavGroups.map((group) => (
                 <div key={group.label} className="border-b border-[var(--color-border)] pb-3 last:border-0">

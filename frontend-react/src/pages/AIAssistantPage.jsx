@@ -292,10 +292,10 @@ export default function AIAssistantPage() {
         </div>
 
         {/* 主体布局 */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid items-stretch gap-6 md:grid-cols-5">
           {/* ===== 左侧：聊天面板 ===== */}
           <div className={`md:col-span-3 ${mobileTab === "recommend" ? "hidden md:block" : ""}`}>
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl overflow-hidden flex flex-col h-[70vh] md:h-[75vh]">
+            <div className="flex h-[70dvh] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] md:h-[75dvh]">
               {/* 聊天消息区 */}
               <div className="flex-1 overflow-y-auto p-4 md:p-6">
                 <AnimatePresence>
@@ -374,7 +374,7 @@ export default function AIAssistantPage() {
 
           {/* ===== 右侧：推荐面板 ===== */}
           <div className={`md:col-span-2 ${mobileTab === "chat" ? "hidden md:block" : ""}`}>
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-5 md:p-6">
+            <div className="flex h-[70dvh] min-h-[32rem] flex-col overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 md:h-[75dvh] md:p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Wine size={16} strokeWidth={1.5} className="text-[var(--color-accent)]" />
                 <h3 className="text-base text-[var(--color-text-main)] font-serif">智能推荐</h3>
@@ -383,7 +383,7 @@ export default function AIAssistantPage() {
               {/* 心情 */}
               <div className="mb-5">
                 <p className="text-xs text-[var(--color-text-muted)] mb-2.5">你的心情</p>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                   {moods.map((m) => (
                     <button
                       key={m.label}
@@ -404,7 +404,7 @@ export default function AIAssistantPage() {
               {/* 场景 */}
               <div className="mb-5">
                 <p className="text-xs text-[var(--color-text-muted)] mb-2.5">饮用场景</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {occasions.map((o) => (
                     <button
                       key={o.label}

@@ -53,7 +53,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center font-sans">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-1 py-4 font-sans sm:items-center">
           {/* 背景遮罩 */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -69,7 +69,7 @@ export default function AuthModal({ open, onClose, initialMode = "login" }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-sm mx-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-8 shadow-2xl"
+            className="relative z-10 my-auto max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto mx-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 sm:p-8 shadow-2xl"
           >
             {/* 关闭按钮 */}
             <button
